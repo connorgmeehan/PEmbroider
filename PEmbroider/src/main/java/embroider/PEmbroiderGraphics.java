@@ -92,8 +92,6 @@ public class PEmbroiderGraphics {
 	static public final int BOUSTROPHEDON = 73;
 	
 	
-	public int ELLIPSE_MODE = PConstants.CENTER;
-	public int RECT_MODE = PConstants.CORNER;
 	public int BEZIER_DETAIL = 40;
 	public int CIRCLE_DETAIL = 32;
 	
@@ -101,8 +99,8 @@ public class PEmbroiderGraphics {
 	public float CATMULLROM_TIGHTNESS = 0.5f;
 	
 	public int HATCH_MODE = PARALLEL;
-	public float HATCH_ANGLE  =  PApplet.QUARTER_PI;
-	public float HATCH_ANGLE2 = -PApplet.QUARTER_PI;
+	public float HATCH_ANGLE  =  Math.PI / 4;
+	public float HATCH_ANGLE2 = -Math.PI / 4;
 	public float HATCH_SPACING = 4;
 	public float HATCH_SCALE = 1;
 	public int HATCH_BACKEND = ADAPTIVE;
@@ -189,12 +187,10 @@ public class PEmbroiderGraphics {
 	/**
 	* The constructor for PEmbroiderGraphics object.
 	*
-	* @param  _app the running PApplet instance: in Processing, just pass the keyword 'this'
 	* @param  w    width 
 	* @param  h    height
 	*/
-	public PEmbroiderGraphics(PApplet _app, int w, int h) {
-		app = _app;
+	public PEmbroiderGraphics(int w, int h) {
 		width = w;
 		height = h;
 		// preview = app.createGraphics(w, h);
@@ -208,387 +204,7 @@ public class PEmbroiderGraphics {
 		PEmbroiderHatchSatin.setGraphics(this);
 		
 	}
-	public PEmbroiderGraphics(PApplet _app) {
-		this(_app,_app.width,_app.height);
-	}
 
-	/**
-	* Set the output file path.
-	* The filename should include the file type extension. 
-	* Supported embroidery formats are: .DST, .EXP, .JEF, .PEC, .PES, .VP3, and .XXX. 
-	* Additionally supported formats are: .PDF, .SVG, .TSV, and .GCODE. 
-	* 
-	* @param  _path output file path. The format will be automatically inferred from the extension.
-	*/
-	public void setPath(String _path) {
-		path = _path;
-	}
-	
-	/**
-	* Clear all current drawings. 
-	* 
-	*/
-	public void clear() {
-		polylines.clear();
-		colors.clear();
-		cullGroups.clear();
-	}
-
-	/* ======================================== STYLE SETTING ======================================== */
-	
-	/** Change fill color
-	 *  @param r red value, 0-255
-	 *  @param g green value, 0-255
-	 *  @param b blue value, 0-255
-	 *  @see   stroke
-	 */
-	public void fill(int r, int g, int b) {
-		isFill = true;
-		currentFill = 0xFF000000 | ((r & 255) << 16) | ((g & 255) << 8) | (b & 255);
-	}
-
-	/** Change fill color
-	 *  @param gray grayscale value, 0-255
-	 */
-	public void fill(int gray) {
-		fill(gray,gray,gray);
-	}
-
-	/** Disable filling shapes
-	 *
-	 */
-	public void noFill() {
-		isFill = false;
-	}
-	
-	/** Change stroke color
-	 *  @param r red value, 0-255
-	 *  @param g green value, 0-255
-	 *  @param b blue value, 0-255
-	 *  @see   fill
-	 */
-	public void stroke(int r, int g, int b) {
-		isStroke = true;
-		currentStroke = 0xFF000000 | ((r & 255) << 16) | ((g & 255) << 8) | (b & 255);
-	}
-	
-	/** Change stroke color
-	 *  @param gray  grayscale value 0-255
-	 */
-	public void stroke(int gray) {
-		stroke(gray,gray,gray);
-	}
-
-	/** Disable outlining shapes
-	 *
-	 */
-	public void noStroke() {
-		isStroke = false;
-	}
-
-	/** Change width of stroke
-	 *  @param d  the stroke weight to use
-	 */
-	public void strokeWeight(float d) {
-		STROKE_WEIGHT = Math.max(d,1);
-	}
-
-	/** Change stroke join (turning point) style
-	 *  @param j  Same as Processing strokeJoin, this can be ROUND, MITER, BEVEL etc.
-	 *  @see   strokeCap
-	 */
-	public void strokeJoin(int j) {
-		STROKE_JOIN = j;
-	}
-
-	/** Change stroke cap (end point) style
-	 *  @param j  Same as Processing strokeCap, this can be ROUND, SQUARE, PROJECT etc.
-	 *  @see strokejoin
-	 */
-	public void strokeCap(int j) {
-		STROKE_CAP = j;
-	}
-
-	/** Modifies the location from which ellipses are drawn by changing the way in which parameters given to ellipse() are intepreted.
-	 *  also governs circle()
-	 *  
-	 *  @param j  Same as Processing ellipseMode, this can be RADIUS, CENTER, CORNER, CORNERS etc.
-	 *  @see   rectMode
-	 */
-	public void ellipseMode(int mode) {
-		ELLIPSE_MODE = mode;
-	}
-
-	/** Modifies the location from which rectangles are drawn by changing the way in which parameters given to rect() are intepreted.
-	 *  
-	 *  @param j  Same as Processing rectMode, this can be RADIUS, CENTER, CORNER, CORNERS etc.
-	 *  @see   ellipseMode
-	 */
-	public void rectMode(int mode) {
-		RECT_MODE = mode;
-	}
-
-	/** Change number of steps bezier curve is interpolated. 
-	 *  
-	 *  @param n The higher this number, the smoother the Bezier curve.
-	 */
-	public void bezierDetail(int n) {
-		BEZIER_DETAIL = Math.max(1, n);
-	}
-	public void curveDetail(int n) {
-		CATMULLROM_DETAIL = Math.max(1,n);
-	}
-	public void curveTightness(float n) {
-		CATMULLROM_TIGHTNESS = Math.max(0, n);
-	}
-
-	/** Change hatching pattern
-	 *  
-	 *  @param mode  This can be one of: PARALLEL, CROSS, CONCENTRIC, SPIRAL, PERLIN, VECFIELD, DRUNK	
-	 */
-	public void hatchMode(int mode) {
-		HATCH_MODE = mode;
-	}
-
-	/** Change outline drawing method
-	 *  
-	 *  @param mode  This can be either PERPENDICULAR or TANGENT	
-	 */
-	public void strokeMode(int mode) {
-		STROKE_MODE = mode;
-	}
-
-	/** Change outline drawing method
-	 *  
-	 *  @param mode     This can be either PERPENDICULAR or TANGENT	
-	 *  @param tanMode  This can be one of COUNT (stroke weight used as line count), WEIGHT (honour stroke weight setting over spacing) or SPACING (honour spacing over stroke weight)
-	 */
-	public void strokeMode(int mode, int tanMode) {
-		STROKE_MODE = mode;
-		STROKE_TANGENT_MODE = tanMode;
-	}
-	
-
-	/** Set the position of the stroke, relative to the shape's edge
-	 *  
-	 *  @param x     Float between -1.0 (inside) and 1.0 (outside). 0.0 is centered.	
-	 */
-	public void strokeLocation(float x) {
-		STROKE_LOCATION = PApplet.min(PApplet.max(-1,x),1);
-	}
-	
-	/** Set the position of the stroke, relative to the shape's edge
-	 *  
-	 *  @param x     This can be one of CENTER, INSIDE, or OUTSIDE 	
-	 */
-	public void strokeLocation(int mode) {
-		if (mode == CENTER) {
-			strokeLocation(0.0f);
-		}else {
-			strokeLocation((float)mode);
-		}
-	}
-	
-	/** Change angle of parallel hatch lines
-	 *  
-	 *  @param ang     the angle from +x in radians
-	 *  @see   hatchAngleDeg
-	 *  @see   hatchAngles
-	 */
-	public void hatchAngle(float ang) {
-		if (Float.isNaN(ang)) {
-			AUTO_HATCH_ANGLE = true;
-			return;
-		}
-		AUTO_HATCH_ANGLE = false;
-		HATCH_ANGLE = ang;
-	}
-
-	/** Change angles of parallel and cross hatching lines
-	 *  
-	 *  @param ang1     the angle from +x in radians (for parallel hatches and the first direction of cross hatching)
-	 *  @param ang2     the angle from +x in radians (for second direction of cross hatching)
-	 *  @see   hatchAngle
-	 *  @see   hatchAnglesDeg
-	 */
-	public void hatchAngles(float ang1, float ang2) {
-		if (Float.isNaN(ang1) || Float.isNaN(ang2)) {
-			AUTO_HATCH_ANGLE = true;
-			return;
-		}
-		AUTO_HATCH_ANGLE = false;
-		HATCH_ANGLE  = ang1;
-		HATCH_ANGLE2 = ang2;
-	}
-
-	/** Change angle of parallel hatch lines
-	 *  
-	 *  @param ang     the angle from +x in degrees
-	 *  @see   hatchAngle
-	 *  @see   hatchAnglesDeg
-	 */
-	public void hatchAngleDeg(float ang) {
-		if (Float.isNaN(ang)) {
-			AUTO_HATCH_ANGLE = true;
-			return;
-		}
-		AUTO_HATCH_ANGLE = false;
-		hatchAngle(PApplet.radians(ang));
-	}
-
-	/** Change angles of parallel and cross hatching lines
-	 *  
-	 *  @param ang1     the angle from +x in degrees (for parallel hatches and the first direction of cross hatching)
-	 *  @param ang2     the angle from +x in degrees (for second direction of cross hatching)
-	 *  @see   hatchAngles
-	 *  @see   hatchAngleDeg
-	 */
-	public void hatchAnglesDeg(float ang1, float ang2) {
-		if (Float.isNaN(ang1) || Float.isNaN(ang2)) {
-			AUTO_HATCH_ANGLE = true;
-			return;
-		}
-		AUTO_HATCH_ANGLE = false;
-		hatchAngles(PApplet.radians(ang1),PApplet.radians(ang2));
-	}
-	
-	/** Sets the orientation of the stitches within a stroke
-	 *  @param ang     the angle (in radians)
-	 */
-	public void strokeAngle(float ang) {
-		STROKE_ANGLE=ang;
-	}
-
-	/** Sets the orientation of the stitches within a stroke
-	 *  @param ang     the angle (in degrees) 
-	 */
-	public void strokeAngleDeg(float ang) {
-		STROKE_ANGLE=PApplet.radians(ang);
-	}
-	
-	/** Changes the spacing between hatching lines: a.k.a sparsity or inverse-density
-	 *  
-	 *  @param d   the spacing in pixels
-	 *  @see       strokeSpacing
-	 */
-	
-	public void hatchSpacing(float d) {
-		HATCH_SPACING = Math.max(0.1f,d);
-	}
-
-	/** Changes the spacing between stroke lines: a.k.a sparsity or inverse-density
-	 *  
-	 *  @param d   the spacing in pixels
-	 *  @see       hatchSpacing
-	 */
-
-	public void strokeSpacing(float d) {
-		STROKE_SPACING = Math.max(0.1f,d);
-	}
-
-	/** Changes the scaling for perlin noise hatching
-	 *  
-	 *  @param s   the scale
-	 */
-	public void hatchScale(float s) {
-		HATCH_SCALE = Math.max(0.000001f,s);;
-	}
-
-	/** Switches the algorithms used to compute the drawing
-	 *  
-	 *  @param mode   one of ADAPTIVE (use most appropriate method for each situation according to Lingdong) FORCE_VECTOR (uses vector math whenever possible) FORCE_RASTER (first render shapes as raster and re-extract the structures, generally more robust)
-	 */
-	public void hatchBackend(int mode) {
-		HATCH_BACKEND = mode;
-	}
-
-	/** Set the vector field used for vector field hatching
-	 *  
-	 *  @param vf a vector field defination -- simple, just a class with a get(x,y) method
-	 */
-	public void setVecField(VectorField vf) {
-		HATCH_VECFIELD = vf;
-	}
-
-	/** Set the desirable stitch length. Stitches will try their best to be around this length, but actual length will vary slightly for best result
-	 *  
-	 *  @param x the desirable stitch length
-	 *  @see minSitchLength
-	 *  @see setStitch
-	 */
-	public void stitchLength(float x) {
-		STITCH_LENGTH = Math.max(0.1f,x);
-	}
-
-	/** Set the minimum stitch length. Drawings with higher precision than this will be resampled down to have at least this stitch length
-	 *  
-	 *  @param x the minimum stitch length
-	 *  @see stichLength
-	 *  @see setStitch
-	 */
-	public void minStitchLength(float x) {
-		MIN_STITCH_LENGTH = Math.max(0f,x);
-	}
-
-	/** Set stitch properties
-	 *  
-	 *  @param msl minimum stitch length
-	 *  @param sl  desirable stitch length
-	 *  @param rn  resample noise -- to avoid alignment patterns; must be in the range [0...1]
-	 */
-	public void setStitch(float msl, float sl, float rn) {
-		MIN_STITCH_LENGTH = Math.max(0f,msl);
-		STITCH_LENGTH = Math.max(0.1f,sl);
-		RESAMPLE_NOISE = Math.max(0.0f,Math.min(1f,rn));
-	}
-
-	/** Set render order: render strokes over fill, or other way around?
-	 *  
-	 *  @param mode  This can either be STROKE_OVER_FILL or FILL_OVER_STROKE
-	 */
-	public void setRenderOrder(int mode) {
-		if (mode == STROKE_OVER_FILL) {
-			FIRST_STROKE_THEN_FILL = false;
-		}else if (mode == FILL_OVER_STROKE) {
-			FIRST_STROKE_THEN_FILL = true;
-		}
-	}
-
-	/** Turn resampling on and off. For embroidery machines, you might want it; for plotters you probably won't need it.
-	 *  
-	 *  @param b   true for on, false for off
-	 */
-	public void toggleResample(boolean b) {
-		NO_RESAMPLE = !b;
-	}
-	public void toggleConnectingLines(boolean b) {
-		NO_CONNECT = !b;
-	}
-	
-	/** Sets whether SPIRAL hatching proceeds clockwise or counterclockwise
-	 *  
-	 *  @param mode   This can be CLOCKWISE or COUNTERCLOCKWISE. CW and CCW are also permissible.
-	 */
-	public void setSpiralDirection(int mode) {
-		HATCH_SPIRAL_DIRECTION = mode;
-	}
-	
-	/** Sets the file exporting behavior if a stitch was placed out of bounds.
-	 *  
-	 *  @param mode   This can be one of WARN, CROP, IGNORE, ASK, or ABORT
-	 */
-	public void setOutOfBoundsHandler(int mode) {
-		OUT_OF_BOUNDS_HANDLER = mode;
-	}
-
-	/** Sets how the SATIN hatching mode operates. 
-	 *  
-	 *  @param mode   This can be one of ZIGZAG, SIGSAG, or BOUSTROPHEDON
-	 */
-	public void satinMode(int mode) {
-		SATIN_MODE = mode;
-	}
-	
 	/* ======================================== MATH ======================================== */
 	
 	/** Compute the determinant of a 3x3 matrix as 3 row vectors.
@@ -884,9 +500,9 @@ public class PEmbroiderGraphics {
 		BCircle bcirc = new BCircle(poly);
 		int avg = 0;
 		for (int i = 0; i < trials; i++) {
-			float a = app.random(0,PApplet.PI*2);
-			float x = bcirc.x + (bcirc.r*2f) * PApplet.cos(a);
-			float y = bcirc.y + (bcirc.r*2f) * PApplet.sin(a);
+			float a = Math.random(0,Math.PI*2);
+			float x = bcirc.x + (bcirc.r*2f) * Math.cos(a);
+			float y = bcirc.y + (bcirc.r*2f) * Math.sin(a);
 			if (segmentIntersectPolygon(p,new PVector(x,y),poly).size() % 2 == 1) {
 				avg ++;
 			}
@@ -918,8 +534,8 @@ public class PEmbroiderGraphics {
 
 		for (int i = 0; i < trials; i++) {
 
-			float x = bb.x+app.random(0,bb.w);
-			float y = bb.y+app.random(0,bb.h);
+			float x = bb.x+Math.random(0,bb.w);
+			float y = bb.y+Math.random(0,bb.h);
 
 			PVector p = new PVector(x,y);
 			if (pointInPolygon(p,poly,1)) {
@@ -948,7 +564,7 @@ public class PEmbroiderGraphics {
 	  // lingdong's hack agianst NaN's
 	  ArrayList<PVector> pts = new ArrayList<PVector>();
 	  for (int i = 0; i < poly.size(); i++) {
-		  pts.add(poly.get(i).copy().add(new PVector(app.random(-0.5f,0.5f),app.random(-0.5f,0.5f))));
+		  pts.add(poly.get(i).copy().add(new PVector(Math.random(-0.5f,0.5f),Math.random(-0.5f,0.5f))));
 	  }
 	  // end lingdong's hack
 	  
@@ -988,13 +604,13 @@ public class PEmbroiderGraphics {
 	      matrix2x2[0][1] = -XYsum;
 	      matrix2x2[1][0] = -XYsum;
 	      matrix2x2[1][1] =  XXsum;
-//	      PApplet.println(matrix2x2[0][0],matrix2x2[0][1],matrix2x2[1][0],matrix2x2[1][1]);
+//	      Math.println(matrix2x2[0][0],matrix2x2[0][1],matrix2x2[1][0],matrix2x2[1][1]);
 	      // get the orientation of the bounding box
 	      float[] response = calcEigenvector ( matrix2x2 );
 	      orientation  = response[0];
 	    }
 	  }
-//	  PApplet.println(centroidPoint, orientation);
+//	  Math.println(centroidPoint, orientation);
 	  return (orientation);//+PConstants.TWO_PI)%PConstants.TWO_PI;
 	}
 
@@ -1020,23 +636,23 @@ public class PEmbroiderGraphics {
 	  c = (A * D) - (B * C);
 	  float Q = (b * b) - (4.0f * a * c);
 	  if (Q >= 0) {
-	    root1 = ((0.0f - b) + PApplet.sqrt ( Q)) / (2.0f * a);
-	    root2 = ((0.0f - b) - PApplet.sqrt ( Q)) / (2.0f * a);
+	    root1 = ((0.0f - b) + Math.sqrt ( Q)) / (2.0f * a);
+	    root2 = ((0.0f - b) - Math.sqrt ( Q)) / (2.0f * a);
 
 	    // assume x1 and x2 are the elements of the eigenvector.  Then, because Ax1 + Bx2 = lambda * x1, 
 	    // we know that x2 = x1 * (lambda - A) / B.
-	    float factor2 = ( PApplet.min (root1, root2) - A) / B;
+	    float factor2 = ( Math.min (root1, root2) - A) / B;
 
 	    // we arbitrarily set x1 = 1.0 and compute the magnitude of the eigenVector with respect to this assumption
-	    float magnitude2 = PApplet.sqrt (1.0f + factor2*factor2);
+	    float magnitude2 = Math.sqrt (1.0f + factor2*factor2);
 
 	    // we now find the exact components of the eigenVector by scaling by 1/magnitude
 	    if ((magnitude2 == 0) || (Float.isNaN(magnitude2))) {
 	      multiPartData[0] = 0;
 	      multiPartData[1] = 0;
 	    } else {
-	      float orientedBoxOrientation = PApplet.atan2 ( (1.0f / magnitude2), (factor2 / magnitude2));
-	      float orientedBoxEigenvalue  = PApplet.log (1.0f+root2); // orientedness
+	      float orientedBoxOrientation = Math.atan2 ( (1.0f / magnitude2), (factor2 / magnitude2));
+	      float orientedBoxEigenvalue  = Math.log (1.0f+root2); // orientedness
 	      multiPartData[0] = orientedBoxOrientation;
 	      multiPartData[1] = orientedBoxEigenvalue;
 	    }
@@ -1110,18 +726,18 @@ public class PEmbroiderGraphics {
 			PVector p = poly.get(i);
 			PVector p0 = poly.get((i-1+poly.size()) % poly.size());
 			PVector p1 = poly.get((i+1)%poly.size());
-			float a0 = PApplet.atan2(p0.y-p.y,p0.x-p.x);
-			float a1 = PApplet.atan2(p1.y-p.y,p1.x-p.x);
+			float a0 = Math.atan2(p0.y-p.y,p0.x-p.x);
+			float a1 = Math.atan2(p1.y-p.y,p1.x-p.x);
 			if (i == 0) {
-				a0 = a1 - PApplet.PI;
+				a0 = a1 - Math.PI;
 			}else if (i == poly.size()-1){
-				a1 = a0 + PApplet.PI;
+				a1 = a0 + Math.PI;
 			}
 			float a = (a1+a0)/2;
-			float d2 = d / (PApplet.sin((a1-a0)/2));
+			float d2 = d / (Math.sin((a1-a0)/2));
 
-			float x = p.x + d2*PApplet.cos(a);
-			float y = p.y + d2*PApplet.sin(a);
+			float x = p.x + d2*Math.cos(a);
+			float y = p.y + d2*Math.sin(a);
 			poly2.add(new PVector(x,y));
 		}
 		for (int i = 1; i < poly2.size()-2; i++) {
@@ -1197,7 +813,7 @@ public class PEmbroiderGraphics {
 					ArrayList<ArrayList<PVector>> polys1 = selfIntersectPolygon(poly1);
 					ArrayList<ArrayList<PVector>> polys2 = selfIntersectPolygon(poly2);
 					polys1.addAll(polys2);
-					//	    			PApplet.println(polys1.size());
+					//	    			Math.println(polys1.size());
 					return polys1;
 				}
 			}
@@ -1279,7 +895,7 @@ public class PEmbroiderGraphics {
 		float y1 = p0.y;
 		float x2 = p1.x;
 		float y2 = p1.y;
-		return PApplet.abs((y2-y1)*x0-(x2-x1)*y0+x2*y1-y2*x1)/PApplet.sqrt(PApplet.sq(y2-y1)+PApplet.sq(x2-x1));
+		return Math.abs((y2-y1)*x0-(x2-x1)*y0+x2*y1-y2*x1)/Math.sqrt(Math.pow(y2-y1, 2)+Math.pow(x2-x1, 2));
 	}
 	
 	/** Calculate distance between point and a segment (when projection is not on the line, the distance becomes that to one of the endpoints)
@@ -1319,307 +935,307 @@ public class PEmbroiderGraphics {
 		}
 		float dx = x - xx;
 		float dy = y - yy;
-		return PApplet.sqrt(dx*dx+dy*dy);
+		return Math.sqrt(dx*dx+dy*dy);
 	}
 	
-	/** Inset a polygon (making it slightly smaller fitting in the original polygon)
-	 *  Inverse of offsetPolygon, alias for offsetPolygon(poly, -d);
-	 *  @param poly  the polygon
-	 *  @param d     the amount of inset
-	 *  @return a list of polygons. When the given polygon is big at both ends and small in the middle, the inset might break into multiple polygons
-	 */
-	public ArrayList<ArrayList<PVector>> insetPolygon(ArrayList<PVector> poly, float d){
-		return offsetPolygon(poly,-d);
-	}
-	
-	/** Offset a polygon (making it slightly smaller fitting in the original polygon, or slightly bigger wrapping the original polygon)
-	 *  @param poly  the polygon
-	 *  @param d     the amount of offset. Use negative value for insetting
-	 *  @return a list of polygons. When the given polygon is big at both ends and small in the middle, the inset might break into multiple polygons
-	 */
-	public ArrayList<ArrayList<PVector>> offsetPolygon(ArrayList<PVector> poly, float d){
-		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-		if (poly.size() < 3) {
-			return polys;
-		}
-		boolean hasSharpAngle = false;
-		for (int i = 0; i < poly.size(); i++) {
-			PVector a = poly.get(i);
-			PVector b = poly.get((i+1)%poly.size());
-			PVector c = poly.get((i+2)%poly.size());
-			PVector u = b.copy().sub(a);
-			PVector v = c.copy().sub(b);
-			float ang = PApplet.abs(PVector.angleBetween(u, v));
-			if (ang > PConstants.PI) {
-				ang = PConstants.TWO_PI - ang;
-			}
-			if (ang > PConstants.PI * 0.9f) {
-				hasSharpAngle = true;
-			}
-		}
-		
-		ArrayList<PVector> poly2 = new ArrayList<PVector>();
-		for (int i = 0; i < poly.size(); i++) {
-			
-			PVector p = poly.get(i);
-			PVector p0 = poly.get((i-1+poly.size()) % poly.size());
-			PVector p1 = poly.get((i+1)%poly.size());
-			
-			boolean ok = true;
-			
-			for (int j = i+1; j < poly.size(); j++) {
-				PVector q = poly.get(j);
-				
-				if (PApplet.abs(p.y-q.y) <= 1 && PApplet.abs(p.x-q.x) <= 1) {
-					ok = false;
-					break;
-				}
-				
-			}
-			if (!ok) {
-				continue;
-			}
-//			for (int j = 0; j < poly.size(); j++) {
-//				if (i == j || (j + 1)%poly.size() == i) {
-//					continue;
-//				}
-//				PVector q0 = poly.get(j);
-//				PVector q1 = poly.get((j+1)%poly.size());
-//				float dl = pointDistanceToSegment(p,q0,q1);
-////				PApplet.println(dl);
-//				if (dl<1) {
-//					ok = false;
-//					break;
-//				}
-//			}
-//			if (!ok) {
-//				continue;
-//			}
-			float a0 = PApplet.atan2(p0.y-p.y,p0.x-p.x);
-			float a1 = PApplet.atan2(p1.y-p.y,p1.x-p.x);
-			float a = (a1+a0)/2;
-			float d2 = d / (PApplet.sin((a1-a0)/2));
-
-			float x = p.x + d2*PApplet.cos(a);
-			float y = p.y + d2*PApplet.sin(a);
-			
-			PVector pp = new PVector(x,y);
-
-			if (hasSharpAngle) {
-				if (d < 0) {
-					if (!pointInPolygon(pp,poly)) {
-						continue;
-					}
-				}else if (d > 0) {
-					if (pointInPolygon(pp,poly)) {
-						continue;
-					}
-				}
-				
-				for (int j = 0; j < poly.size(); j++) {
-					if (pp.dist(poly.get(i))<PApplet.abs(d)-0.1f) {
-						ok = false;
-						break;
-					}
-				}
-				if (!ok) {
-					continue;
-				}
-				for (int j = 0; j < poly.size(); j++) {
-					PVector q0 = poly.get(j);
-					PVector q1 = poly.get((j+1)%poly.size());
-					float dl = pointDistanceToSegment(pp,q0,q1);
-	//				PApplet.println(dl);
-					if (dl<PApplet.abs(d)-0.1f) {
-						ok = false;
-						break;
-					}
-				}
-				if(!ok) {
-					continue;
-				}
-			}
-			poly2.add(pp);
-		}
-		polys.add(poly2);
-
-		
-		polys = selfIntersectPolygon(poly2);
-		if (polys.size() <= 0) {
-			return polys;
-			// no escape for size==1, shape could be totally "inside-out",
-			// with no intersection, but should still be discarded.
-		}
-		BBox bb = new BBox(poly);
-		bb.x -= PApplet.abs(d)*2;
-		bb.y -= PApplet.abs(d)*2;
-		bb.w += 4*PApplet.abs(d);
-		bb.h += 4*PApplet.abs(d);
-		PGraphics pg = app.createGraphics(PApplet.ceil(bb.w), PApplet.ceil(bb.h));
-		pg.beginDraw();
-		pg.background(d<0?0:255);
-		pg.translate(-bb.x,-bb.y);
-		pg.fill(255);
-		pg.noStroke();
-		pg.beginShape();
-		for (int i = 0; i < poly.size(); i++) {
-			pg.vertex(poly.get(i).x,poly.get(i).y);
-		}
-		pg.endShape(PConstants.CLOSE);
-		pg.strokeJoin(PConstants.MITER);
-		pg.noFill();
-		pg.stroke(0);
-		pg.strokeWeight(PApplet.abs(d*2));
-		pg.beginShape();
-		for (int i = 0; i < poly.size(); i++) {
-			pg.vertex(poly.get(i).x,poly.get(i).y);
-		}
-		pg.endShape(PConstants.CLOSE);
-		pg.endDraw();
-		
-		for (int i = polys.size()-1; i>=0; i--) {
-			int trials = 99;
-			boolean ok = false;
-			for (int j = 0; j < 5; j++) {
-				PVector p = randomPointInPolygon(polys.get(i),trials);
-
-				if (p == null) {
-					continue;
-				}
-				int c = pg.get((int)(p.x-bb.x),(int)(p.y-bb.y));
-				int r = c >> 16 & 0xFF;
-			//    			pg.beginDraw();pg.noStroke();pg.fill(0,255*i,255*(1-i));pg.circle(p.x-bb.x,p.y-bb.y,2f);pg.endDraw();
-				if (r >= 128) {
-					ok = true;
-					break;
-	
-				}
-				trials*=10;
-			}
-			if (!ok) {
-				polys.remove(i);
-			}
-		}
-//		    	app.tint(255,100);
-//		    	app.image(pg,bb.x,bb.y);
-		return polys;
-	}
-	public ArrayList<ArrayList<PVector>> insetPolygonsRaster(ArrayList<ArrayList<PVector>> polys, float d) {
-		if (polys.size()==0) {
-			return new ArrayList<ArrayList<PVector>>();
-		}
-		BBox bb = new BBox(polys,0);
-		
-		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w),(int)PApplet.ceil(bb.h));
-		pg.beginDraw();
-		pg.background(0);
-		pg.fill(255);
-		pg.stroke(0);
-		pg.strokeWeight(d*2);
-		pg.translate(-bb.x,-bb.y);
-		pg.beginShape();
-		for (int i = 0; i < polys.get(0).size(); i++) {
-			pg.vertex(polys.get(0).get(i).x,polys.get(0).get(i).y);
-		}
-		for (int j = 1; j < polys.size(); j++) {
-			pg.beginContour();
-			for (int i = 0; i < polys.get(j).size(); i++) {
-				pg.vertex(polys.get(j).get(i).x,polys.get(j).get(i).y);
-			}
-			pg.endContour();
-		}
-		pg.endShape(PConstants.CLOSE);
-		pg.endDraw();
-
-		ArrayList<ArrayList<PVector>> polys2 = PEmbroiderTrace.findContours(pg);
-		
-		for (int i = polys2.size()-1; i >= 0; i--) {
-			if (polys2.get(i).size() < 2) {
-				polys2.remove(i);
-				continue;
-			}
-			for (int j = 0; j < polys2.get(i).size(); j++) {
-				polys2.get(i).get(j).add(new PVector(bb.x,bb.y));
-			}
-			polys2.set(i, PEmbroiderTrace.approxPolyDP(polys2.get(i), 1));
-		}
-		return polys2;
-	}
-	
-	public ArrayList<ArrayList<PVector>> outsetPolygonsRaster(ArrayList<ArrayList<PVector>> polys, float d) {
-		if (polys.size()==0) {
-			return new ArrayList<ArrayList<PVector>>();
-		}
-		BBox bb = new BBox(polys,0);
-		bb.x -= d*2;
-		bb.y -= d*2;
-		bb.w += d*4;
-		bb.h += d*4;
-		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w),(int)PApplet.ceil(bb.h));
-		pg.beginDraw();
-		pg.background(0);
-		pg.fill(255);
-		pg.stroke(255);
-		pg.strokeWeight(d*2);
-		pg.translate(-bb.x,-bb.y);
-		pg.beginShape();
-		for (int i = 0; i < polys.get(0).size(); i++) {
-			pg.vertex(polys.get(0).get(i).x,polys.get(0).get(i).y);
-		}
-		for (int j = 1; j < polys.size(); j++) {
-			pg.beginContour();
-			for (int i = 0; i < polys.get(j).size(); i++) {
-				pg.vertex(polys.get(j).get(i).x,polys.get(j).get(i).y);
-			}
-			pg.endContour();
-		}
-		pg.endShape(PConstants.CLOSE);
-		pg.endDraw();
-		ArrayList<ArrayList<PVector>> polys2 = PEmbroiderTrace.findContours(pg);
-		
-		for (int i = polys2.size()-1; i >= 0; i--) {
-			if (polys2.get(i).size() < 2) {
-				polys2.remove(i);
-				continue;
-			}
-			for (int j = 0; j < polys2.get(i).size(); j++) {
-				polys2.get(i).get(j).add(new PVector(bb.x,bb.y));
-			}
-			polys2.set(i, PEmbroiderTrace.approxPolyDP(polys2.get(i), 1));
-		}
-		return polys2;
-	}
-
-
-	/** When the general shapes of two polygons are similar, this function finds the index offset of vertices for the first polygon so that the vertices best match those of the second polygon with one-to-one correspondence.
-	 *  The number of vertices needs to be the same for the polygons
-	 *  @param poly0 the first polygon
-	 *  @param poly1 the second polygon
-	 *  @return the optimal index offset
-	 */
-	public int rotatePolygonToMatch(ArrayList<PVector> poly0, ArrayList<PVector> poly1) {
-		// polygons must have same number of vertices!
-		// and rightly oriented!
-
-		int md = 0;
-		float ml = Float.POSITIVE_INFINITY;
-			for (int d = 0; d < poly1.size(); d++) {
-				float l = 0;
-				for (int i = 0; i < poly0.size(); i++) {
-
-						PVector p0 = poly0.get(i);
-						PVector p1 = poly1.get((i+d) % poly1.size());
-						l += p0.dist(p1);
-				}
-
-				if (l < ml) {
-					md = d;
-					ml = l;
-				}
-			}
-
-		return md;
-	}
+// 	/** Inset a polygon (making it slightly smaller fitting in the original polygon)
+// 	 *  Inverse of offsetPolygon, alias for offsetPolygon(poly, -d);
+// 	 *  @param poly  the polygon
+// 	 *  @param d     the amount of inset
+// 	 *  @return a list of polygons. When the given polygon is big at both ends and small in the middle, the inset might break into multiple polygons
+// 	 */
+// 	public ArrayList<ArrayList<PVector>> insetPolygon(ArrayList<PVector> poly, float d){
+// 		return offsetPolygon(poly,-d);
+// 	}
+// 	
+// 	/** Offset a polygon (making it slightly smaller fitting in the original polygon, or slightly bigger wrapping the original polygon)
+// 	 *  @param poly  the polygon
+// 	 *  @param d     the amount of offset. Use negative value for insetting
+// 	 *  @return a list of polygons. When the given polygon is big at both ends and small in the middle, the inset might break into multiple polygons
+// 	 */
+// 	public ArrayList<ArrayList<PVector>> offsetPolygon(ArrayList<PVector> poly, float d){
+// 		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 		if (poly.size() < 3) {
+// 			return polys;
+// 		}
+// 		boolean hasSharpAngle = false;
+// 		for (int i = 0; i < poly.size(); i++) {
+// 			PVector a = poly.get(i);
+// 			PVector b = poly.get((i+1)%poly.size());
+// 			PVector c = poly.get((i+2)%poly.size());
+// 			PVector u = b.copy().sub(a);
+// 			PVector v = c.copy().sub(b);
+// 			float ang = Math.abs(PVector.angleBetween(u, v));
+// 			if (ang > PConstants.PI) {
+// 				ang = PConstants.TWO_PI - ang;
+// 			}
+// 			if (ang > PConstants.PI * 0.9f) {
+// 				hasSharpAngle = true;
+// 			}
+// 		}
+// 		
+// 		ArrayList<PVector> poly2 = new ArrayList<PVector>();
+// 		for (int i = 0; i < poly.size(); i++) {
+// 			
+// 			PVector p = poly.get(i);
+// 			PVector p0 = poly.get((i-1+poly.size()) % poly.size());
+// 			PVector p1 = poly.get((i+1)%poly.size());
+// 			
+// 			boolean ok = true;
+// 			
+// 			for (int j = i+1; j < poly.size(); j++) {
+// 				PVector q = poly.get(j);
+// 				
+// 				if (Math.abs(p.y-q.y) <= 1 && Math.abs(p.x-q.x) <= 1) {
+// 					ok = false;
+// 					break;
+// 				}
+// 				
+// 			}
+// 			if (!ok) {
+// 				continue;
+// 			}
+// //			for (int j = 0; j < poly.size(); j++) {
+// //				if (i == j || (j + 1)%poly.size() == i) {
+// //					continue;
+// //				}
+// //				PVector q0 = poly.get(j);
+// //				PVector q1 = poly.get((j+1)%poly.size());
+// //				float dl = pointDistanceToSegment(p,q0,q1);
+// ////				Math.println(dl);
+// //				if (dl<1) {
+// //					ok = false;
+// //					break;
+// //				}
+// //			}
+// //			if (!ok) {
+// //				continue;
+// //			}
+// 			float a0 = Math.atan2(p0.y-p.y,p0.x-p.x);
+// 			float a1 = Math.atan2(p1.y-p.y,p1.x-p.x);
+// 			float a = (a1+a0)/2;
+// 			float d2 = d / (Math.sin((a1-a0)/2));
+//
+// 			float x = p.x + d2*Math.cos(a);
+// 			float y = p.y + d2*Math.sin(a);
+// 			
+// 			PVector pp = new PVector(x,y);
+//
+// 			if (hasSharpAngle) {
+// 				if (d < 0) {
+// 					if (!pointInPolygon(pp,poly)) {
+// 						continue;
+// 					}
+// 				}else if (d > 0) {
+// 					if (pointInPolygon(pp,poly)) {
+// 						continue;
+// 					}
+// 				}
+// 				
+// 				for (int j = 0; j < poly.size(); j++) {
+// 					if (pp.dist(poly.get(i))<Math.abs(d)-0.1f) {
+// 						ok = false;
+// 						break;
+// 					}
+// 				}
+// 				if (!ok) {
+// 					continue;
+// 				}
+// 				for (int j = 0; j < poly.size(); j++) {
+// 					PVector q0 = poly.get(j);
+// 					PVector q1 = poly.get((j+1)%poly.size());
+// 					float dl = pointDistanceToSegment(pp,q0,q1);
+// 	//				Math.println(dl);
+// 					if (dl<Math.abs(d)-0.1f) {
+// 						ok = false;
+// 						break;
+// 					}
+// 				}
+// 				if(!ok) {
+// 					continue;
+// 				}
+// 			}
+// 			poly2.add(pp);
+// 		}
+// 		polys.add(poly2);
+//
+// 		
+// 		polys = selfIntersectPolygon(poly2);
+// 		if (polys.size() <= 0) {
+// 			return polys;
+// 			// no escape for size==1, shape could be totally "inside-out",
+// 			// with no intersection, but should still be discarded.
+// 		}
+// 		BBox bb = new BBox(poly);
+// 		bb.x -= Math.abs(d)*2;
+// 		bb.y -= Math.abs(d)*2;
+// 		bb.w += 4*Math.abs(d);
+// 		bb.h += 4*Math.abs(d);
+// 		PGraphics pg = app.createGraphics(Math.ceil(bb.w), PApplet.ceil(bb.h));
+// 		pg.beginDraw();
+// 		pg.background(d<0?0:255);
+// 		pg.translate(-bb.x,-bb.y);
+// 		pg.fill(255);
+// 		pg.noStroke();
+// 		pg.beginShape();
+// 		for (int i = 0; i < poly.size(); i++) {
+// 			pg.vertex(poly.get(i).x,poly.get(i).y);
+// 		}
+// 		pg.endShape(PConstants.CLOSE);
+// 		pg.strokeJoin(PConstants.MITER);
+// 		pg.noFill();
+// 		pg.stroke(0);
+// 		pg.strokeWeight(PApplet.abs(d*2));
+// 		pg.beginShape();
+// 		for (int i = 0; i < poly.size(); i++) {
+// 			pg.vertex(poly.get(i).x,poly.get(i).y);
+// 		}
+// 		pg.endShape(PConstants.CLOSE);
+// 		pg.endDraw();
+// 		
+// 		for (int i = polys.size()-1; i>=0; i--) {
+// 			int trials = 99;
+// 			boolean ok = false;
+// 			for (int j = 0; j < 5; j++) {
+// 				PVector p = randomPointInPolygon(polys.get(i),trials);
+//
+// 				if (p == null) {
+// 					continue;
+// 				}
+// 				int c = pg.get((int)(p.x-bb.x),(int)(p.y-bb.y));
+// 				int r = c >> 16 & 0xFF;
+// 			//    			pg.beginDraw();pg.noStroke();pg.fill(0,255*i,255*(1-i));pg.circle(p.x-bb.x,p.y-bb.y,2f);pg.endDraw();
+// 				if (r >= 128) {
+// 					ok = true;
+// 					break;
+// 	
+// 				}
+// 				trials*=10;
+// 			}
+// 			if (!ok) {
+// 				polys.remove(i);
+// 			}
+// 		}
+// //		    	app.tint(255,100);
+// //		    	app.image(pg,bb.x,bb.y);
+// 		return polys;
+// 	}
+	// public ArrayList<ArrayList<PVector>> insetPolygonsRaster(ArrayList<ArrayList<PVector>> polys, float d) {
+	// 	if (polys.size()==0) {
+	// 		return new ArrayList<ArrayList<PVector>>();
+	// 	}
+	// 	BBox bb = new BBox(polys,0);
+	// 	
+	// 	PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w),(int)PApplet.ceil(bb.h));
+	// 	pg.beginDraw();
+	// 	pg.background(0);
+	// 	pg.fill(255);
+	// 	pg.stroke(0);
+	// 	pg.strokeWeight(d*2);
+	// 	pg.translate(-bb.x,-bb.y);
+	// 	pg.beginShape();
+	// 	for (int i = 0; i < polys.get(0).size(); i++) {
+	// 		pg.vertex(polys.get(0).get(i).x,polys.get(0).get(i).y);
+	// 	}
+	// 	for (int j = 1; j < polys.size(); j++) {
+	// 		pg.beginContour();
+	// 		for (int i = 0; i < polys.get(j).size(); i++) {
+	// 			pg.vertex(polys.get(j).get(i).x,polys.get(j).get(i).y);
+	// 		}
+	// 		pg.endContour();
+	// 	}
+	// 	pg.endShape(PConstants.CLOSE);
+	// 	pg.endDraw();
+	//
+	// 	ArrayList<ArrayList<PVector>> polys2 = PEmbroiderTrace.findContours(pg);
+	// 	
+	// 	for (int i = polys2.size()-1; i >= 0; i--) {
+	// 		if (polys2.get(i).size() < 2) {
+	// 			polys2.remove(i);
+	// 			continue;
+	// 		}
+	// 		for (int j = 0; j < polys2.get(i).size(); j++) {
+	// 			polys2.get(i).get(j).add(new PVector(bb.x,bb.y));
+	// 		}
+	// 		polys2.set(i, PEmbroiderTrace.approxPolyDP(polys2.get(i), 1));
+	// 	}
+	// 	return polys2;
+	// }
+	// 
+	// public ArrayList<ArrayList<PVector>> outsetPolygonsRaster(ArrayList<ArrayList<PVector>> polys, float d) {
+	// 	if (polys.size()==0) {
+	// 		return new ArrayList<ArrayList<PVector>>();
+	// 	}
+	// 	BBox bb = new BBox(polys,0);
+	// 	bb.x -= d*2;
+	// 	bb.y -= d*2;
+	// 	bb.w += d*4;
+	// 	bb.h += d*4;
+	// 	PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w),(int)PApplet.ceil(bb.h));
+	// 	pg.beginDraw();
+	// 	pg.background(0);
+	// 	pg.fill(255);
+	// 	pg.stroke(255);
+	// 	pg.strokeWeight(d*2);
+	// 	pg.translate(-bb.x,-bb.y);
+	// 	pg.beginShape();
+	// 	for (int i = 0; i < polys.get(0).size(); i++) {
+	// 		pg.vertex(polys.get(0).get(i).x,polys.get(0).get(i).y);
+	// 	}
+	// 	for (int j = 1; j < polys.size(); j++) {
+	// 		pg.beginContour();
+	// 		for (int i = 0; i < polys.get(j).size(); i++) {
+	// 			pg.vertex(polys.get(j).get(i).x,polys.get(j).get(i).y);
+	// 		}
+	// 		pg.endContour();
+	// 	}
+	// 	pg.endShape(PConstants.CLOSE);
+	// 	pg.endDraw();
+	// 	ArrayList<ArrayList<PVector>> polys2 = PEmbroiderTrace.findContours(pg);
+	// 	
+	// 	for (int i = polys2.size()-1; i >= 0; i--) {
+	// 		if (polys2.get(i).size() < 2) {
+	// 			polys2.remove(i);
+	// 			continue;
+	// 		}
+	// 		for (int j = 0; j < polys2.get(i).size(); j++) {
+	// 			polys2.get(i).get(j).add(new PVector(bb.x,bb.y));
+	// 		}
+	// 		polys2.set(i, PEmbroiderTrace.approxPolyDP(polys2.get(i), 1));
+	// 	}
+	// 	return polys2;
+	// }
+	//
+	//
+	// /** When the general shapes of two polygons are similar, this function finds the index offset of vertices for the first polygon so that the vertices best match those of the second polygon with one-to-one correspondence.
+	//  *  The number of vertices needs to be the same for the polygons
+	//  *  @param poly0 the first polygon
+	//  *  @param poly1 the second polygon
+	//  *  @return the optimal index offset
+	//  */
+	// public int rotatePolygonToMatch(ArrayList<PVector> poly0, ArrayList<PVector> poly1) {
+	// 	// polygons must have same number of vertices!
+	// 	// and rightly oriented!
+	//
+	// 	int md = 0;
+	// 	float ml = Float.POSITIVE_INFINITY;
+	// 		for (int d = 0; d < poly1.size(); d++) {
+	// 			float l = 0;
+	// 			for (int i = 0; i < poly0.size(); i++) {
+	//
+	// 					PVector p0 = poly0.get(i);
+	// 					PVector p1 = poly1.get((i+d) % poly1.size());
+	// 					l += p0.dist(p1);
+	// 			}
+	//
+	// 			if (l < ml) {
+	// 				md = d;
+	// 				ml = l;
+	// 			}
+	// 		}
+	//
+	// 	return md;
+	// }
 	
 	/** Draw stroke (outline) for a polygon using the TANGENT style (using vector math)
 	 *  @param poly the polygon
@@ -1684,675 +1300,675 @@ public class PEmbroiderGraphics {
 		return polys;
 	}
 	
-	/** Draw stroke (outline) for (a) poly(gon/line)(s) using the TANGENT style (using raster algorithms)
-	 *  @param polys  a set of polyline/polygons, those inside another and have a backward winding will be considered holes
-	 *  @param n      number of strokes
-	 *  @param d      spacing between the strokes
-	 *  @param cap    stroke cap, one of the Processing stroke caps, e.g. ROUND
-	 *  @param join   stroke join, one of the Processing stroke joins, e.g. MITER
-	 *  @param close  whether the polyline is considered as closed (polygon) or open (polyline)
-	 *  @return       an array of polylines
-	 */
-	public ArrayList<ArrayList<PVector>> strokePolyTangentRaster(ArrayList<ArrayList<PVector>> polys, int n, float d, int cap, int join, boolean close) {
-		BBox bb = new BBox(polys,0);
-		float scl = 1;
-		if (d <= 4) {
-			scl = 2;
-		}
-		
-		bb.x -= n*d;
-		bb.y -= n*d;
-		bb.w += n*d*2;
-		bb.h += n*d*2;
-		
-		PGraphics pg = app.createGraphics((int)(bb.w*scl), (int)(bb.h*scl));
-		ArrayList<ArrayList<PVector>> polys2 = new ArrayList<ArrayList<PVector>>();
-		
-		int hn = n/2;
-		
-		for (int k = 0; k < hn; k++) {
-			float dd = d;
-			if (k == 0) {
-				if (n % 2 == 1) {
-					for (int i = 0; i < polys.size(); i++) {
-						ArrayList<PVector> poly = new ArrayList<PVector>(polys.get(i));
-						if (close && poly.size() > 1) {
-							poly.add(poly.get(0));
-						}
-						polys2.add(poly);
-					}
-				}else {
-				}
-			}
-			pg.beginDraw();
-			pg.background(0);
-			pg.stroke(255);
-			pg.strokeWeight(scl*(dd*2*(k+1)-((n%2)==0?dd:0)));
-			pg.strokeCap(cap);
-			pg.strokeJoin(join);
-			pg.noFill();
-			pg.beginShape();
-
-			for (int i = 0; i < polys.size(); i++) {
-				if (i > 0) {
-					pg.beginContour();
-				}
-				for (int j = 0; j < polys.get(i).size(); j++) {
-					pg.vertex((polys.get(i).get(j).x -bb.x)*scl,(polys.get(i).get(j).y -bb.y)*scl);
-				}
-				if (i > 0) {
-					pg.endContour();
-				}
-			}
-			if (close) {
-				pg.endShape(PConstants.CLOSE);
-			}else {
-				pg.endShape();
-			}
-			pg.endDraw();
-			ArrayList<ArrayList<PVector>> polys3 = PEmbroiderTrace.findContours(pg);
-			
-			for (int i = polys3.size()-1; i >= 0; i--) {
-				if (polys3.get(i).size() < 2) {
-					polys3.remove(i);
-					continue;
-				}
-				for (int j = 0; j < polys3.get(i).size(); j++) {
-					polys3.get(i).get(j).div(scl).add(new PVector(bb.x,bb.y));
-				}
-//				polys3.set(i,resampleHalfKeepCorners(resampleHalf(resampleHalf(polys3.get(i))),0.1f));
-				polys3.set(i, PEmbroiderTrace.approxPolyDP(polys3.get(i), 1));
-				if (polys3.get(i).get(polys3.get(i).size()-1).dist(polys3.get(i).get(0))<d*2) {
-					polys3.get(i).add(polys3.get(i).get(0));
-				}
-			}
-			
-			
-			if (CONCENTRIC_ANTIALIGN > 0) {
-				for (int i = 0; i < polys3.size(); i++) {
-					ArrayList<PVector> pp = polys3.get(i);
-					if (k%2 == 0) {
-						ArrayList<PVector> qq = new ArrayList<PVector>();
-						for (int j = 0; j < pp.size()+1; j++) {
-							if (j != pp.size()) {
-								PVector a = pp.get((j-1+pp.size())%pp.size());
-								PVector b = pp.get(j);
-								PVector c = pp.get((j+1)%pp.size());
-								PVector u = b.copy().sub(a);
-								PVector v = c.copy().sub(b);
-								float ang = PApplet.abs(PVector.angleBetween(u, v));
-								if (ang > PConstants.PI) {
-									ang = PConstants.TWO_PI - ang;
-								}
-								if (ang > CONCENTRIC_ANTIALIGN) {
-									qq.add(b);
-								}
-							}
-							
-							PVector p = pp.get(j%pp.size()).copy().mult(0.5f).add(pp.get((j+1)%pp.size()).copy().mult(0.5f));
-							qq.add(p);
-						}
-						polys2.add(qq);
+// 	/** Draw stroke (outline) for (a) poly(gon/line)(s) using the TANGENT style (using raster algorithms)
+// 	 *  @param polys  a set of polyline/polygons, those inside another and have a backward winding will be considered holes
+// 	 *  @param n      number of strokes
+// 	 *  @param d      spacing between the strokes
+// 	 *  @param cap    stroke cap, one of the Processing stroke caps, e.g. ROUND
+// 	 *  @param join   stroke join, one of the Processing stroke joins, e.g. MITER
+// 	 *  @param close  whether the polyline is considered as closed (polygon) or open (polyline)
+// 	 *  @return       an array of polylines
+// 	 */
+// 	public ArrayList<ArrayList<PVector>> strokePolyTangentRaster(ArrayList<ArrayList<PVector>> polys, int n, float d, int cap, int join, boolean close) {
+// 		BBox bb = new BBox(polys,0);
+// 		float scl = 1;
+// 		if (d <= 4) {
+// 			scl = 2;
+// 		}
+// 		
+// 		bb.x -= n*d;
+// 		bb.y -= n*d;
+// 		bb.w += n*d*2;
+// 		bb.h += n*d*2;
+// 		
+// 		PGraphics pg = app.createGraphics((int)(bb.w*scl), (int)(bb.h*scl));
+// 		ArrayList<ArrayList<PVector>> polys2 = new ArrayList<ArrayList<PVector>>();
+// 		
+// 		int hn = n/2;
+// 		
+// 		for (int k = 0; k < hn; k++) {
+// 			float dd = d;
+// 			if (k == 0) {
+// 				if (n % 2 == 1) {
+// 					for (int i = 0; i < polys.size(); i++) {
+// 						ArrayList<PVector> poly = new ArrayList<PVector>(polys.get(i));
+// 						if (close && poly.size() > 1) {
+// 							poly.add(poly.get(0));
+// 						}
+// 						polys2.add(poly);
+// 					}
+// 				}else {
+// 				}
+// 			}
+// 			pg.beginDraw();
+// 			pg.background(0);
+// 			pg.stroke(255);
+// 			pg.strokeWeight(scl*(dd*2*(k+1)-((n%2)==0?dd:0)));
+// 			pg.strokeCap(cap);
+// 			pg.strokeJoin(join);
+// 			pg.noFill();
+// 			pg.beginShape();
+//
+// 			for (int i = 0; i < polys.size(); i++) {
+// 				if (i > 0) {
+// 					pg.beginContour();
+// 				}
+// 				for (int j = 0; j < polys.get(i).size(); j++) {
+// 					pg.vertex((polys.get(i).get(j).x -bb.x)*scl,(polys.get(i).get(j).y -bb.y)*scl);
+// 				}
+// 				if (i > 0) {
+// 					pg.endContour();
+// 				}
+// 			}
+// 			if (close) {
+// 				pg.endShape(PConstants.CLOSE);
+// 			}else {
+// 				pg.endShape();
+// 			}
+// 			pg.endDraw();
+// 			ArrayList<ArrayList<PVector>> polys3 = PEmbroiderTrace.findContours(pg);
+// 			
+// 			for (int i = polys3.size()-1; i >= 0; i--) {
+// 				if (polys3.get(i).size() < 2) {
+// 					polys3.remove(i);
+// 					continue;
+// 				}
+// 				for (int j = 0; j < polys3.get(i).size(); j++) {
+// 					polys3.get(i).get(j).div(scl).add(new PVector(bb.x,bb.y));
+// 				}
+// //				polys3.set(i,resampleHalfKeepCorners(resampleHalf(resampleHalf(polys3.get(i))),0.1f));
+// 				polys3.set(i, PEmbroiderTrace.approxPolyDP(polys3.get(i), 1));
+// 				if (polys3.get(i).get(polys3.get(i).size()-1).dist(polys3.get(i).get(0))<d*2) {
+// 					polys3.get(i).add(polys3.get(i).get(0));
+// 				}
+// 			}
+// 			
+// 			
+// 			if (CONCENTRIC_ANTIALIGN > 0) {
+// 				for (int i = 0; i < polys3.size(); i++) {
+// 					ArrayList<PVector> pp = polys3.get(i);
+// 					if (k%2 == 0) {
+// 						ArrayList<PVector> qq = new ArrayList<PVector>();
+// 						for (int j = 0; j < pp.size()+1; j++) {
+// 							if (j != pp.size()) {
+// 								PVector a = pp.get((j-1+pp.size())%pp.size());
+// 								PVector b = pp.get(j);
+// 								PVector c = pp.get((j+1)%pp.size());
+// 								PVector u = b.copy().sub(a);
+// 								PVector v = c.copy().sub(b);
+// 								float ang = PApplet.abs(PVector.angleBetween(u, v));
+// 								if (ang > PConstants.PI) {
+// 									ang = PConstants.TWO_PI - ang;
+// 								}
+// 								if (ang > CONCENTRIC_ANTIALIGN) {
+// 									qq.add(b);
+// 								}
+// 							}
+// 							
+// 							PVector p = pp.get(j%pp.size()).copy().mult(0.5f).add(pp.get((j+1)%pp.size()).copy().mult(0.5f));
+// 							qq.add(p);
+// 						}
+// 						polys2.add(qq);
+// 	
+// 						
+// 					}else {
+// 						polys2.add(pp);
+// 					}
+// 				}
+// 			}else {
+// 				polys2.addAll(polys3);
+// 			}
+//
+// //			app.tint(255,/100f);
+// //			app.image(pg,bb.x,bb.y);
+// 		}
+// //		
+// 		return polys2;
+// 	}
+// 	
+// 	/** Draw stroke (outline) for a poly(gon/line) using the PERPENDICULAR (a.k.a normal, as in "normal map", not "normal person") style (using vector math)
+// 	 *  @param poly the polygon
+// 	 *  @param d     weight of stroke
+// 	 *  @param s     spacing between the strokes
+// 	 *  @param close whether the polyline is considered as closed (polygon) or open (polyline)
+// 	 *  @return      an array of polylines
+// 	 */
+// 	public ArrayList<ArrayList<PVector>> strokePolyNormal(ArrayList<PVector> poly, float d, float s, boolean close){
+// //		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 		ArrayList<ArrayList<ArrayList<PVector>>> polyss = new ArrayList<ArrayList<ArrayList<PVector>>>();
+// 		
+// 		BBox bb = new BBox(poly);
+// 		bb.x -= d*2;
+// 		bb.y -= d*2;
+// 		bb.w += d*4;
+// 		bb.h += d*4;
+// 		
+// 		PGraphics pg = app.createGraphics((int)bb.w, (int)bb.h);
+// 		pg.beginDraw();
+// 		pg.background(0);
+// 		pg.stroke(255);
+// 		pg.strokeWeight(s*1f);
+// 		pg.translate(-bb.x,-bb.y);
+// 		pg.strokeCap(PConstants.SQUARE);
+// 		for (int i = 0; i < poly.size()-(close?0:1); i++) {
+// 			ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 			polyss.add(polys);
+// 			PVector p0 = poly.get(i);
+// 			PVector p1 = poly.get((i+1)%poly.size());
+// 			
+// 			float a0 = PApplet.atan2(p1.y-p0.y,p1.x-p0.x);
+// 			float a1 = a0 + PApplet.HALF_PI;
+// 			
+// 			float l = p0.dist(p1);
+// 			int n = PApplet.ceil(l / s);
+// 			if (n == 0) {
+// 				continue;
+// 			}
+// 			for (int j = 0; j < n+1; j++) {
+// 				float t = (float)j/(float)n;
+// 				PVector p = p0.copy().lerp(p1, t);
+// 				float x0 = p.x - d*PApplet.cos(a1);
+// 				float y0 = p.y - d*PApplet.sin(a1);
+// 				float x1 = p.x + d*PApplet.cos(a1);
+// 				float y1 = p.y + d*PApplet.sin(a1);
+//
+// 				boolean lastOn = false;
+// 				int m = PApplet.ceil(d)+1;
+// 				int mmm = PApplet.min(20,m/3);
+// 				
+// 				pg.beginShape();
+// 				for (int k = 0; k < m; k++) {
+// 					float u = (float)k/(float)PApplet.max(1,m-1);
+// 					float x2 = x0 * (1-u) + x1 * u;
+// 					float y2 = y0 * (1-u) + y1 * u;
+// 					if (k == m-1 && lastOn) {
+// 						if (polys.get(polys.size()-1).size() < mmm) {
+// 							polys.remove(polys.size()-1);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						    pg.vertex(x2,y2);
+// 						}
+// 						continue;
+// 					}
+// 					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<127) {
+// 						if (!lastOn) {
+// 							ArrayList<PVector> pp = new ArrayList<PVector>();
+// 							pp.add(new PVector(x2,y2));
+// 							polys.add(pp);
+// 							pg.endShape();
+// 							pg.beginShape();
+// 							pg.vertex(x2,y2);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						}
+// 						lastOn = true;
+// 					}else {
+// 						if (lastOn) {
+// 							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
+// 								polys.remove(polys.size()-1);
+// 							}else {
+// 								polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 								pg.vertex(x2,y2);
+// 							}
+// 						}
+// 						lastOn = false;
+// 					}
+// 				}
+// 				pg.endShape();
+// 			}
+// 			
+// 		}
+// 		pg.filter(PConstants.DILATE);
+//
+// 		polyss.add( new ArrayList<ArrayList<PVector>>());
+// 		int mm = PApplet.ceil(PApplet.PI*(d*2)/s*PERPENDICULAR_STROKE_CAP_DENSITY_MULTIPLIER);
+// 		
+// 		if (!close) {
+// 			for (int i = 0; i < poly.size(); i++) {
+// 				
+// 				ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
+// 				PVector p0 = poly.get(i);
+// 				
+// 				if ((i == 0 || i == poly.size()-1 ) && poly.size()>1) {
+// 					float a;
+// 					if (i == 0) {
+// 						a = PApplet.atan2(poly.get(0).y-poly.get(1).y, poly.get(0).x-poly.get(1).x);
+// 					}else {
+// 						a = PApplet.atan2(poly.get(poly.size()-1).y-poly.get(poly.size()-2).y, poly.get(poly.size()-1).x-poly.get(poly.size()-2).x);
+// 					}
+// 					for (int j = 0; j < mm/2; j++) {
+// 						float t = (float)j/(float)(mm/2);
+// 						float x1 = p0.x+d*t*PApplet.cos(a);
+// 						float y1 = p0.y+d*t*PApplet.sin(a);
+// 						float cw = d*PApplet.sqrt(1-t*t);
+// 						
+// 						float xa = x1+cw*PApplet.cos(a-PConstants.HALF_PI);
+// 						float ya = y1+cw*PApplet.sin(a-PConstants.HALF_PI);
+// 						
+// 						float xb = x1+cw*PApplet.cos(a+PConstants.HALF_PI);
+// 						float yb = y1+cw*PApplet.sin(a+PConstants.HALF_PI);
+// 						
+// 						ArrayList<PVector> pp = new ArrayList<PVector>();
+// 						pp.add(new PVector(xa,ya));
+// 						pp.add(new PVector(xb,yb));
+// 						polys.add(pp);
+//
+// 					}
+// 					pg.pushStyle();
+// 					pg.fill(255);
+// 					pg.noStroke();
+// 					pg.circle(poly.get(i).x,poly.get(i).y,d*2+2);
+// 					pg.popStyle();				
+// 				}
+// 			}
+// 			
+// 			
+// 		}
+// 		
+// 		
+// 		
+// 		for (int i = 0; i < poly.size(); i++) {
+// 			
+// 			ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
+// 			PVector p0 = poly.get(i);
+// 			float x0 = p0.x;
+// 			float y0 = p0.y;
+// 			
+// 			
+// 			for (int j = 0; j < mm; j++) {
+// 				float a = (float)j/(float)mm*PApplet.TWO_PI;
+// 				float x1 = p0.x - d*PApplet.cos(a);
+// 				float y1 = p0.y - d*PApplet.sin(a);
+// 				boolean lastOn = false;
+//
+// 				int m = PApplet.ceil(d);
+// 				int mmm = PApplet.min(10,m/3);
+// 				mmm = 0;
+//
+// 				pg.beginShape();
+// 				for (int k = 0; k < m; k++) {
+// 					float u = (float)k/(float)(m-1);
+// 					float x2 = x0 * (1-u) + x1 * u;
+// 					float y2 = y0 * (1-u) + y1 * u;
+// 					if (k == m-1 && lastOn) {
+// 						if (polys.get(polys.size()-1).size() < mmm) {
+// 							polys.remove(polys.size()-1);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 							pg.vertex(x2,y2);
+// 						}
+// 						continue;
+// 					}
+// 					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<1) {
+// 						if (!lastOn) {
+// 							ArrayList<PVector> pp = new ArrayList<PVector>();
+// 							pp.add(new PVector(x2,y2));
+// 							polys.add(pp);
+// 							pg.endShape();
+// 							pg.beginShape();
+// 							pg.vertex(x2,y2);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						}
+// 						lastOn = true;
+// 					}else {
+// 						if (lastOn) {
+// 							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
+// 								polys.remove(polys.size()-1);
+// 							}else {
+// 								polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 								pg.vertex(x2,y2);
+// 							}
+// 						}
+// 						lastOn = false;
+// 					}
+// 				}
+// 				pg.endShape();
+// 				pg.endShape();
+// 			}
+// 			
+// 		}
+// 		
+// 		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 		for (int _i = 0; _i < polyss.size(); _i++) {
+// 			int i = (_i - 1 + polyss.size())%polyss.size();
+// 			for (int j = 0; j < polyss.get(i).size(); j++) {
+// 				if (j % 2 == 0) {
+// 					Collections.reverse(polyss.get(i).get(j));
+// 				}
+// 				polys.add(polyss.get(i).get(j));
+// 			}
+// 		}
+// 		pg.endDraw();
+// 		float ml = PApplet.min(2,d-1);
+// 		for (int i = polys.size()-1; i >= 0; i--) {
+// 			if (polys.get(i).size() < 2) {
+// 				polys.remove(i);
+// 				continue;
+// 			}
+// 			if (polys.get(i).get(0).dist(polys.get(i).get(polys.get(i).size()-1))<ml) {
+// 				polys.remove(i);
+// 				continue;
+// 			}
+// 			for (int j = polys.get(i).size()-2; j > 0; j--) {
+// 				polys.get(i).remove(j);
+// 			}
+// 		}
+// 		if (!NO_CONNECT) {
+// 			for (int i = 1; i < polys.size(); i++) {
+// 				polys.get(0).addAll(polys.get(i));
+// 			}
+// 			for (int i = polys.size()-1; i>0; i--) {
+// 				polys.remove(i);
+// 			}
+// 		}
+// //		app.image(pg,0,0);
+// 		return polys;
+// 	}
+// 	
+// 	
+// 	public ArrayList<ArrayList<PVector>> strokePolyNormalAng(ArrayList<PVector> poly, float d, float s, float ang, boolean close){
+// //		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 		ArrayList<ArrayList<ArrayList<PVector>>> polyss = new ArrayList<ArrayList<ArrayList<PVector>>>();
+// 		
+// 		float dd = PApplet.abs(d / PApplet.cos(ang));
+// 		
+// 		BBox bb = new BBox(poly);
+// 		bb.x -= d*2;
+// 		bb.y -= d*2;
+// 		bb.w += d*4;
+// 		bb.h += d*4;
+// 		
+// 		PGraphics pg = app.createGraphics((int)bb.w, (int)bb.h);
+// 		pg.beginDraw();
+// 		pg.background(0);
+// 		pg.stroke(255);
+// 		pg.strokeWeight(s*1.0f);
+// 		pg.translate(-bb.x,-bb.y);
+// 		pg.strokeCap(PConstants.SQUARE);
+// 		for (int i = 0; i < poly.size()-(close?0:1); i++) {
+// 			ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 			polyss.add(polys);
+// 			
+// 			PVector p0 = poly.get(i);
+// 			PVector p1 = poly.get((i+1)%poly.size());
+// 			
+// 			float a0 = PApplet.atan2(p1.y-p0.y,p1.x-p0.x);
+// 			float a1 = a0 + PApplet.HALF_PI + ang;
+// 			
+// 			float l = p0.dist(p1);
+// 			int n = PApplet.ceil(l / s);
+// 			if (n == 0) {
+// 				continue;
+// 			}
+// 			for (int j = 0; j < n+1; j++) {
+// 				float t = (float)j/(float)n;
+// 				PVector p = p0.copy().lerp(p1, t);
+// 				float x0 = p.x - dd*PApplet.cos(a1);
+// 				float y0 = p.y - dd*PApplet.sin(a1);
+// 				float x1 = p.x + dd*PApplet.cos(a1);
+// 				float y1 = p.y + dd*PApplet.sin(a1);
+//
+// 				boolean lastOn = false;
+// 				int m = PApplet.ceil(dd)+1;
+// 				int mmm = PApplet.min(20,m/3);
+// 				
+// 				pg.beginShape();
+// 				for (int k = 0; k < m; k++) {
+// 					float u = (float)k/(float)PApplet.max(1,m-1);
+// 					float x2 = x0 * (1-u) + x1 * u;
+// 					float y2 = y0 * (1-u) + y1 * u;
+// 					if (k == m-1 && lastOn) {
+// 						if (polys.get(polys.size()-1).size() < mmm) {
+// 							polys.remove(polys.size()-1);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						    pg.vertex(x2,y2);
+// 						}
+// 						continue;
+// 					}
+// 					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<127) {
+// 						if (!lastOn) {
+// 							ArrayList<PVector> pp = new ArrayList<PVector>();
+// 							pp.add(new PVector(x2,y2));
+// 							polys.add(pp);
+// 							pg.endShape();
+// 							pg.beginShape();
+// 							pg.vertex(x2,y2);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						}
+// 						lastOn = true;
+// 					}else {
+// 						if (lastOn) {
+// 							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
+// 								polys.remove(polys.size()-1);
+// 							}else {
+// 								polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 								pg.vertex(x2,y2);
+// 							}
+// 						}
+// 						lastOn = false;
+// 					}
+// 				}
+// 				pg.endShape();
+// 			}
+// 			
+// 		}
+// 		pg.filter(PConstants.DILATE);
+//
+// 		polyss.add( new ArrayList<ArrayList<PVector>>());
+// 		int mm = PApplet.ceil(PApplet.PI*(d*2)/s*PERPENDICULAR_STROKE_CAP_DENSITY_MULTIPLIER);
+// 		
+// 		
+// 		
+// 		if (!close) {
+// 			for (int i = 0; i < poly.size(); i++) {
+// 				
+// 				ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
+// 				PVector p0 = poly.get(i);
+// 				
+// 				if ((i == 0 || i == poly.size()-1 ) && poly.size()>1) {
+// 					float a;
+// 					if (i == 0) {
+// 						a = PApplet.atan2(poly.get(0).y-poly.get(1).y, poly.get(0).x-poly.get(1).x);
+// 					}else {
+// 						a = PApplet.atan2(poly.get(poly.size()-1).y-poly.get(poly.size()-2).y, poly.get(poly.size()-1).x-poly.get(poly.size()-2).x);
+// 					}
+// 					a += ang;
+// 					for (int j = 0; j < mm/2; j++) {
+// 						float t = (float)j/(float)(mm/2);
+// 						if (i == 0) {
+// 							t = 1-t;
+// 						}
+// 						float x1 = p0.x+d*t*PApplet.cos(a);
+// 						float y1 = p0.y+d*t*PApplet.sin(a);
+// 						float cw = d*PApplet.sqrt(1-t*t)/PApplet.abs(PApplet.cos(ang));
+// 						
+// 						float xa = x1+cw*PApplet.cos(a-PConstants.HALF_PI);
+// 						float ya = y1+cw*PApplet.sin(a-PConstants.HALF_PI);
+// 						
+// 						float xb = x1+cw*PApplet.cos(a+PConstants.HALF_PI);
+// 						float yb = y1+cw*PApplet.sin(a+PConstants.HALF_PI);
+// 						
+// 						ArrayList<PVector> pp = new ArrayList<PVector>();
+// 						pp.add(new PVector(xa,ya));
+// 						pp.add(new PVector(xb,yb));
+// 						polys.add(pp);
+//
+// 					}
+// 					pg.pushStyle();
+// 					pg.fill(255);
+// 					pg.noStroke();
+// 					pg.circle(poly.get(i).x,poly.get(i).y,d*2+2);
+// 					pg.popStyle();				
+// 				}
+// 			}
+// 			
+// 			
+// 		}
+// 		
+// 		for (int i = 0; i < poly.size(); i++) {
+// 			ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
+// 			
+// 			PVector p0 = poly.get(i);
+// 			float x0 = p0.x;
+// 			float y0 = p0.y;
+// 			
+// 			for (int j = 0; j < mm; j++) {
+// 				float a = (float)j/(float)mm*PApplet.TWO_PI;
+// 				float x1 = p0.x - d*PApplet.cos(a);
+// 				float y1 = p0.y - d*PApplet.sin(a);
+// 				boolean lastOn = false;
+// 				
+// 				int m = PApplet.ceil(d);
+// 				int mmm = PApplet.min(10,m/3);
+// 				mmm = 0;
+// 				
+// 				pg.beginShape();
+// 				for (int k = 0; k < m; k++) {
+// 					float u = (float)k/(float)(m-1);
+// 					float x2 = x0 * (1-u) + x1 * u;
+// 					float y2 = y0 * (1-u) + y1 * u;
+// 					if (k == m-1 && lastOn) {
+// 						if (polys.get(polys.size()-1).size() < mmm) {
+// 							polys.remove(polys.size()-1);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						    pg.vertex(x2,y2);
+// 						}
+// 						continue;
+// 					}
+// 					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<127) {
+// 						if (!lastOn) {
+// 							ArrayList<PVector> pp = new ArrayList<PVector>();
+// 							pp.add(new PVector(x2,y2));
+// 							polys.add(pp);
+// 							pg.endShape();
+// 							pg.beginShape();
+// 							pg.vertex(x2,y2);
+// 						}else {
+// 							polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 						}
+// 						lastOn = true;
+// 					}else {
+// 						if (lastOn) {
+// 							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
+// 								polys.remove(polys.size()-1);
+// 							}else {
+// 								polys.get(polys.size()-1).add(new PVector(x2,y2));
+// 								pg.vertex(x2,y2);
+// 							}
+// 						}
+// 						lastOn = false;
+// 					}
+// 				}
+// 				pg.endShape();
+// 				pg.endShape();
+// 			}
+// 		}
+// 		
+// 		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
+// 		for (int _i = 0; _i < polyss.size(); _i++) {
+// 			int i = (_i - 1 + polyss.size())%polyss.size();
+// 			for (int j = 0; j < polyss.get(i).size(); j++) {
+// 				if (j % 2 == 0) {
+// 					Collections.reverse(polyss.get(i).get(j));
+// 				}
+// 				polys.add(polyss.get(i).get(j));
+// 			}
+// 		}
+// 		pg.endDraw();
+// 		float ml = PApplet.min(2,d-1);
+// 		for (int i = polys.size()-1; i >= 0; i--) {
+// 			if (polys.get(i).size() < 2) {
+// 				polys.remove(i);
+// 				continue;
+// 			}
+// 			if (polys.get(i).get(0).dist(polys.get(i).get(polys.get(i).size()-1))<ml) {
+// 				polys.remove(i);
+// 				continue;
+// 			}
+// 			for (int j = polys.get(i).size()-2; j > 0; j--) {
+// 				polys.get(i).remove(j);
+// 			}
+// 		}
+// 		if (!NO_CONNECT) {
+// 			for (int i = 1; i < polys.size(); i++) {
+// 				polys.get(0).addAll(polys.get(i));
+// 			}
+// 			for (int i = polys.size()-1; i>0; i--) {
+// 				polys.remove(i);
+// 			}
+// 		}
+// //		app.image(pg,0,0);
+// 		return polys;
+// 	}
 	
-						
-					}else {
-						polys2.add(pp);
-					}
-				}
-			}else {
-				polys2.addAll(polys3);
-			}
-
-//			app.tint(255,/100f);
-//			app.image(pg,bb.x,bb.y);
-		}
-//		
-		return polys2;
-	}
-	
-	/** Draw stroke (outline) for a poly(gon/line) using the PERPENDICULAR (a.k.a normal, as in "normal map", not "normal person") style (using vector math)
-	 *  @param poly the polygon
-	 *  @param d     weight of stroke
-	 *  @param s     spacing between the strokes
-	 *  @param close whether the polyline is considered as closed (polygon) or open (polyline)
-	 *  @return      an array of polylines
-	 */
-	public ArrayList<ArrayList<PVector>> strokePolyNormal(ArrayList<PVector> poly, float d, float s, boolean close){
-//		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-		ArrayList<ArrayList<ArrayList<PVector>>> polyss = new ArrayList<ArrayList<ArrayList<PVector>>>();
-		
-		BBox bb = new BBox(poly);
-		bb.x -= d*2;
-		bb.y -= d*2;
-		bb.w += d*4;
-		bb.h += d*4;
-		
-		PGraphics pg = app.createGraphics((int)bb.w, (int)bb.h);
-		pg.beginDraw();
-		pg.background(0);
-		pg.stroke(255);
-		pg.strokeWeight(s*1f);
-		pg.translate(-bb.x,-bb.y);
-		pg.strokeCap(PConstants.SQUARE);
-		for (int i = 0; i < poly.size()-(close?0:1); i++) {
-			ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-			polyss.add(polys);
-			PVector p0 = poly.get(i);
-			PVector p1 = poly.get((i+1)%poly.size());
-			
-			float a0 = PApplet.atan2(p1.y-p0.y,p1.x-p0.x);
-			float a1 = a0 + PApplet.HALF_PI;
-			
-			float l = p0.dist(p1);
-			int n = PApplet.ceil(l / s);
-			if (n == 0) {
-				continue;
-			}
-			for (int j = 0; j < n+1; j++) {
-				float t = (float)j/(float)n;
-				PVector p = p0.copy().lerp(p1, t);
-				float x0 = p.x - d*PApplet.cos(a1);
-				float y0 = p.y - d*PApplet.sin(a1);
-				float x1 = p.x + d*PApplet.cos(a1);
-				float y1 = p.y + d*PApplet.sin(a1);
-
-				boolean lastOn = false;
-				int m = PApplet.ceil(d)+1;
-				int mmm = PApplet.min(20,m/3);
-				
-				pg.beginShape();
-				for (int k = 0; k < m; k++) {
-					float u = (float)k/(float)PApplet.max(1,m-1);
-					float x2 = x0 * (1-u) + x1 * u;
-					float y2 = y0 * (1-u) + y1 * u;
-					if (k == m-1 && lastOn) {
-						if (polys.get(polys.size()-1).size() < mmm) {
-							polys.remove(polys.size()-1);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						    pg.vertex(x2,y2);
-						}
-						continue;
-					}
-					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<127) {
-						if (!lastOn) {
-							ArrayList<PVector> pp = new ArrayList<PVector>();
-							pp.add(new PVector(x2,y2));
-							polys.add(pp);
-							pg.endShape();
-							pg.beginShape();
-							pg.vertex(x2,y2);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						}
-						lastOn = true;
-					}else {
-						if (lastOn) {
-							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
-								polys.remove(polys.size()-1);
-							}else {
-								polys.get(polys.size()-1).add(new PVector(x2,y2));
-								pg.vertex(x2,y2);
-							}
-						}
-						lastOn = false;
-					}
-				}
-				pg.endShape();
-			}
-			
-		}
-		pg.filter(PConstants.DILATE);
-
-		polyss.add( new ArrayList<ArrayList<PVector>>());
-		int mm = PApplet.ceil(PApplet.PI*(d*2)/s*PERPENDICULAR_STROKE_CAP_DENSITY_MULTIPLIER);
-		
-		if (!close) {
-			for (int i = 0; i < poly.size(); i++) {
-				
-				ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
-				PVector p0 = poly.get(i);
-				
-				if ((i == 0 || i == poly.size()-1 ) && poly.size()>1) {
-					float a;
-					if (i == 0) {
-						a = PApplet.atan2(poly.get(0).y-poly.get(1).y, poly.get(0).x-poly.get(1).x);
-					}else {
-						a = PApplet.atan2(poly.get(poly.size()-1).y-poly.get(poly.size()-2).y, poly.get(poly.size()-1).x-poly.get(poly.size()-2).x);
-					}
-					for (int j = 0; j < mm/2; j++) {
-						float t = (float)j/(float)(mm/2);
-						float x1 = p0.x+d*t*PApplet.cos(a);
-						float y1 = p0.y+d*t*PApplet.sin(a);
-						float cw = d*PApplet.sqrt(1-t*t);
-						
-						float xa = x1+cw*PApplet.cos(a-PConstants.HALF_PI);
-						float ya = y1+cw*PApplet.sin(a-PConstants.HALF_PI);
-						
-						float xb = x1+cw*PApplet.cos(a+PConstants.HALF_PI);
-						float yb = y1+cw*PApplet.sin(a+PConstants.HALF_PI);
-						
-						ArrayList<PVector> pp = new ArrayList<PVector>();
-						pp.add(new PVector(xa,ya));
-						pp.add(new PVector(xb,yb));
-						polys.add(pp);
-
-					}
-					pg.pushStyle();
-					pg.fill(255);
-					pg.noStroke();
-					pg.circle(poly.get(i).x,poly.get(i).y,d*2+2);
-					pg.popStyle();				
-				}
-			}
-			
-			
-		}
-		
-		
-		
-		for (int i = 0; i < poly.size(); i++) {
-			
-			ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
-			PVector p0 = poly.get(i);
-			float x0 = p0.x;
-			float y0 = p0.y;
-			
-			
-			for (int j = 0; j < mm; j++) {
-				float a = (float)j/(float)mm*PApplet.TWO_PI;
-				float x1 = p0.x - d*PApplet.cos(a);
-				float y1 = p0.y - d*PApplet.sin(a);
-				boolean lastOn = false;
-
-				int m = PApplet.ceil(d);
-				int mmm = PApplet.min(10,m/3);
-				mmm = 0;
-
-				pg.beginShape();
-				for (int k = 0; k < m; k++) {
-					float u = (float)k/(float)(m-1);
-					float x2 = x0 * (1-u) + x1 * u;
-					float y2 = y0 * (1-u) + y1 * u;
-					if (k == m-1 && lastOn) {
-						if (polys.get(polys.size()-1).size() < mmm) {
-							polys.remove(polys.size()-1);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-							pg.vertex(x2,y2);
-						}
-						continue;
-					}
-					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<1) {
-						if (!lastOn) {
-							ArrayList<PVector> pp = new ArrayList<PVector>();
-							pp.add(new PVector(x2,y2));
-							polys.add(pp);
-							pg.endShape();
-							pg.beginShape();
-							pg.vertex(x2,y2);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						}
-						lastOn = true;
-					}else {
-						if (lastOn) {
-							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
-								polys.remove(polys.size()-1);
-							}else {
-								polys.get(polys.size()-1).add(new PVector(x2,y2));
-								pg.vertex(x2,y2);
-							}
-						}
-						lastOn = false;
-					}
-				}
-				pg.endShape();
-				pg.endShape();
-			}
-			
-		}
-		
-		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-		for (int _i = 0; _i < polyss.size(); _i++) {
-			int i = (_i - 1 + polyss.size())%polyss.size();
-			for (int j = 0; j < polyss.get(i).size(); j++) {
-				if (j % 2 == 0) {
-					Collections.reverse(polyss.get(i).get(j));
-				}
-				polys.add(polyss.get(i).get(j));
-			}
-		}
-		pg.endDraw();
-		float ml = PApplet.min(2,d-1);
-		for (int i = polys.size()-1; i >= 0; i--) {
-			if (polys.get(i).size() < 2) {
-				polys.remove(i);
-				continue;
-			}
-			if (polys.get(i).get(0).dist(polys.get(i).get(polys.get(i).size()-1))<ml) {
-				polys.remove(i);
-				continue;
-			}
-			for (int j = polys.get(i).size()-2; j > 0; j--) {
-				polys.get(i).remove(j);
-			}
-		}
-		if (!NO_CONNECT) {
-			for (int i = 1; i < polys.size(); i++) {
-				polys.get(0).addAll(polys.get(i));
-			}
-			for (int i = polys.size()-1; i>0; i--) {
-				polys.remove(i);
-			}
-		}
-//		app.image(pg,0,0);
-		return polys;
-	}
-	
-	
-	public ArrayList<ArrayList<PVector>> strokePolyNormalAng(ArrayList<PVector> poly, float d, float s, float ang, boolean close){
-//		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-		ArrayList<ArrayList<ArrayList<PVector>>> polyss = new ArrayList<ArrayList<ArrayList<PVector>>>();
-		
-		float dd = PApplet.abs(d / PApplet.cos(ang));
-		
-		BBox bb = new BBox(poly);
-		bb.x -= d*2;
-		bb.y -= d*2;
-		bb.w += d*4;
-		bb.h += d*4;
-		
-		PGraphics pg = app.createGraphics((int)bb.w, (int)bb.h);
-		pg.beginDraw();
-		pg.background(0);
-		pg.stroke(255);
-		pg.strokeWeight(s*1.0f);
-		pg.translate(-bb.x,-bb.y);
-		pg.strokeCap(PConstants.SQUARE);
-		for (int i = 0; i < poly.size()-(close?0:1); i++) {
-			ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-			polyss.add(polys);
-			
-			PVector p0 = poly.get(i);
-			PVector p1 = poly.get((i+1)%poly.size());
-			
-			float a0 = PApplet.atan2(p1.y-p0.y,p1.x-p0.x);
-			float a1 = a0 + PApplet.HALF_PI + ang;
-			
-			float l = p0.dist(p1);
-			int n = PApplet.ceil(l / s);
-			if (n == 0) {
-				continue;
-			}
-			for (int j = 0; j < n+1; j++) {
-				float t = (float)j/(float)n;
-				PVector p = p0.copy().lerp(p1, t);
-				float x0 = p.x - dd*PApplet.cos(a1);
-				float y0 = p.y - dd*PApplet.sin(a1);
-				float x1 = p.x + dd*PApplet.cos(a1);
-				float y1 = p.y + dd*PApplet.sin(a1);
-
-				boolean lastOn = false;
-				int m = PApplet.ceil(dd)+1;
-				int mmm = PApplet.min(20,m/3);
-				
-				pg.beginShape();
-				for (int k = 0; k < m; k++) {
-					float u = (float)k/(float)PApplet.max(1,m-1);
-					float x2 = x0 * (1-u) + x1 * u;
-					float y2 = y0 * (1-u) + y1 * u;
-					if (k == m-1 && lastOn) {
-						if (polys.get(polys.size()-1).size() < mmm) {
-							polys.remove(polys.size()-1);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						    pg.vertex(x2,y2);
-						}
-						continue;
-					}
-					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<127) {
-						if (!lastOn) {
-							ArrayList<PVector> pp = new ArrayList<PVector>();
-							pp.add(new PVector(x2,y2));
-							polys.add(pp);
-							pg.endShape();
-							pg.beginShape();
-							pg.vertex(x2,y2);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						}
-						lastOn = true;
-					}else {
-						if (lastOn) {
-							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
-								polys.remove(polys.size()-1);
-							}else {
-								polys.get(polys.size()-1).add(new PVector(x2,y2));
-								pg.vertex(x2,y2);
-							}
-						}
-						lastOn = false;
-					}
-				}
-				pg.endShape();
-			}
-			
-		}
-		pg.filter(PConstants.DILATE);
-
-		polyss.add( new ArrayList<ArrayList<PVector>>());
-		int mm = PApplet.ceil(PApplet.PI*(d*2)/s*PERPENDICULAR_STROKE_CAP_DENSITY_MULTIPLIER);
-		
-		
-		
-		if (!close) {
-			for (int i = 0; i < poly.size(); i++) {
-				
-				ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
-				PVector p0 = poly.get(i);
-				
-				if ((i == 0 || i == poly.size()-1 ) && poly.size()>1) {
-					float a;
-					if (i == 0) {
-						a = PApplet.atan2(poly.get(0).y-poly.get(1).y, poly.get(0).x-poly.get(1).x);
-					}else {
-						a = PApplet.atan2(poly.get(poly.size()-1).y-poly.get(poly.size()-2).y, poly.get(poly.size()-1).x-poly.get(poly.size()-2).x);
-					}
-					a += ang;
-					for (int j = 0; j < mm/2; j++) {
-						float t = (float)j/(float)(mm/2);
-						if (i == 0) {
-							t = 1-t;
-						}
-						float x1 = p0.x+d*t*PApplet.cos(a);
-						float y1 = p0.y+d*t*PApplet.sin(a);
-						float cw = d*PApplet.sqrt(1-t*t)/PApplet.abs(PApplet.cos(ang));
-						
-						float xa = x1+cw*PApplet.cos(a-PConstants.HALF_PI);
-						float ya = y1+cw*PApplet.sin(a-PConstants.HALF_PI);
-						
-						float xb = x1+cw*PApplet.cos(a+PConstants.HALF_PI);
-						float yb = y1+cw*PApplet.sin(a+PConstants.HALF_PI);
-						
-						ArrayList<PVector> pp = new ArrayList<PVector>();
-						pp.add(new PVector(xa,ya));
-						pp.add(new PVector(xb,yb));
-						polys.add(pp);
-
-					}
-					pg.pushStyle();
-					pg.fill(255);
-					pg.noStroke();
-					pg.circle(poly.get(i).x,poly.get(i).y,d*2+2);
-					pg.popStyle();				
-				}
-			}
-			
-			
-		}
-		
-		for (int i = 0; i < poly.size(); i++) {
-			ArrayList<ArrayList<PVector>> polys = polyss.get((i-1+poly.size())%poly.size());
-			
-			PVector p0 = poly.get(i);
-			float x0 = p0.x;
-			float y0 = p0.y;
-			
-			for (int j = 0; j < mm; j++) {
-				float a = (float)j/(float)mm*PApplet.TWO_PI;
-				float x1 = p0.x - d*PApplet.cos(a);
-				float y1 = p0.y - d*PApplet.sin(a);
-				boolean lastOn = false;
-				
-				int m = PApplet.ceil(d);
-				int mmm = PApplet.min(10,m/3);
-				mmm = 0;
-				
-				pg.beginShape();
-				for (int k = 0; k < m; k++) {
-					float u = (float)k/(float)(m-1);
-					float x2 = x0 * (1-u) + x1 * u;
-					float y2 = y0 * (1-u) + y1 * u;
-					if (k == m-1 && lastOn) {
-						if (polys.get(polys.size()-1).size() < mmm) {
-							polys.remove(polys.size()-1);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						    pg.vertex(x2,y2);
-						}
-						continue;
-					}
-					if ((pg.get((int)(x2-bb.x),(int)(y2-bb.y))>>16&0xFF)<127) {
-						if (!lastOn) {
-							ArrayList<PVector> pp = new ArrayList<PVector>();
-							pp.add(new PVector(x2,y2));
-							polys.add(pp);
-							pg.endShape();
-							pg.beginShape();
-							pg.vertex(x2,y2);
-						}else {
-							polys.get(polys.size()-1).add(new PVector(x2,y2));
-						}
-						lastOn = true;
-					}else {
-						if (lastOn) {
-							if (polys.get(polys.size()-1).size() < mmm) {//PApplet.min(3,m)) {
-								polys.remove(polys.size()-1);
-							}else {
-								polys.get(polys.size()-1).add(new PVector(x2,y2));
-								pg.vertex(x2,y2);
-							}
-						}
-						lastOn = false;
-					}
-				}
-				pg.endShape();
-				pg.endShape();
-			}
-		}
-		
-		ArrayList<ArrayList<PVector>> polys = new ArrayList<ArrayList<PVector>>();
-		for (int _i = 0; _i < polyss.size(); _i++) {
-			int i = (_i - 1 + polyss.size())%polyss.size();
-			for (int j = 0; j < polyss.get(i).size(); j++) {
-				if (j % 2 == 0) {
-					Collections.reverse(polyss.get(i).get(j));
-				}
-				polys.add(polyss.get(i).get(j));
-			}
-		}
-		pg.endDraw();
-		float ml = PApplet.min(2,d-1);
-		for (int i = polys.size()-1; i >= 0; i--) {
-			if (polys.get(i).size() < 2) {
-				polys.remove(i);
-				continue;
-			}
-			if (polys.get(i).get(0).dist(polys.get(i).get(polys.get(i).size()-1))<ml) {
-				polys.remove(i);
-				continue;
-			}
-			for (int j = polys.get(i).size()-2; j > 0; j--) {
-				polys.get(i).remove(j);
-			}
-		}
-		if (!NO_CONNECT) {
-			for (int i = 1; i < polys.size(); i++) {
-				polys.get(0).addAll(polys.get(i));
-			}
-			for (int i = polys.size()-1; i>0; i--) {
-				polys.remove(i);
-			}
-		}
-//		app.image(pg,0,0);
-		return polys;
-	}
-	
-	/** draws stroke (outline) for (a) poly(gon/line)(s) using current global settings by the user.
-	 *  returns nothing, because it draws to the design directly.
-	 *  @param polys a set of polyline/polygons, those inside another and have a backward winding will be considered holes
-	 *  @param close whether the polyline is considered as closed (polygon) or open (polyline)
-	 */
-	public void _stroke(ArrayList<ArrayList<PVector>> polys, boolean close) {
-
-		if (STROKE_WEIGHT <= 1) {
-			if (close) {
-				for (int i = 0; i < polys.size(); i++) {
-					if (polys.get(i).size() > 0) {
-						polys.get(i).add(polys.get(i).get(0));
-					}
-				}
-			}
-			for (int i = 0; i < polys.size(); i++) {
-				pushPolyline(polys.get(i),currentStroke);
-			}
-		}else {
-			if (PApplet.abs(STROKE_LOCATION) > Float.MIN_VALUE && close) {
-				float d = STROKE_WEIGHT/2*STROKE_LOCATION;
-				if (d > 0) {
-					polys = outsetPolygonsRaster(polys,d);
-				}else {
-					polys = insetPolygonsRaster(polys,PApplet.abs(d));
-				}
-			}
-			if (STROKE_MODE == TANGENT) {
-				int cnt = (int)STROKE_WEIGHT;
-				float spa = STROKE_SPACING;
-				if (STROKE_WEIGHT > 1) {
-					if (STROKE_TANGENT_MODE == WEIGHT) {
-						cnt = (int)PApplet.ceil((float)STROKE_WEIGHT/(float)STROKE_SPACING)+1;
-						spa = (float)STROKE_WEIGHT/(float)cnt;
-					}else if (STROKE_TANGENT_MODE == SPACING) {
-						cnt = (int)PApplet.ceil((float)STROKE_WEIGHT/(float)STROKE_SPACING)+1;
-					}
-				}
-
-				ArrayList<ArrayList<PVector>> polys2 = strokePolyTangentRaster(polys,cnt,spa,STROKE_CAP,STROKE_JOIN,close);
-				for (int i = 0; i < polys2.size(); i++) {
-					
-					pushPolyline(polys2.get(i),currentStroke,0f);
-				}
-					
-			}else if (STROKE_MODE == PERPENDICULAR) {
-				
-				for (int i = 0; i < polys.size(); i++) {
-					ArrayList<ArrayList<PVector>> polys2 = strokePolyNormal(polys.get(i),(float)STROKE_WEIGHT/2.0f,STROKE_SPACING,close);
-					for (int j = 0; j < polys2.size(); j++) {
-						pushPolyline(polys2.get(j),currentStroke,0f);
-					}
-				}
-			}else if (STROKE_MODE == ANGLED) {
-				for (int i = 0; i < polys.size(); i++) {
-					ArrayList<ArrayList<PVector>> polys2 = strokePolyNormalAng(polys.get(i),(float)STROKE_WEIGHT/2.0f,STROKE_SPACING,STROKE_ANGLE,close);
-					for (int j = 0; j < polys2.size(); j++) {
-						pushPolyline(polys2.get(j),currentStroke,0f);
-					}
-				}
-			}
-			
-		}
-	}
+	// /** draws stroke (outline) for (a) poly(gon/line)(s) using current global settings by the user.
+	//  *  returns nothing, because it draws to the design directly.
+	//  *  @param polys a set of polyline/polygons, those inside another and have a backward winding will be considered holes
+	//  *  @param close whether the polyline is considered as closed (polygon) or open (polyline)
+	//  */
+	// public void _stroke(ArrayList<ArrayList<PVector>> polys, boolean close) {
+	//
+	// 	if (STROKE_WEIGHT <= 1) {
+	// 		if (close) {
+	// 			for (int i = 0; i < polys.size(); i++) {
+	// 				if (polys.get(i).size() > 0) {
+	// 					polys.get(i).add(polys.get(i).get(0));
+	// 				}
+	// 			}
+	// 		}
+	// 		for (int i = 0; i < polys.size(); i++) {
+	// 			pushPolyline(polys.get(i),currentStroke);
+	// 		}
+	// 	}else {
+	// 		if (PApplet.abs(STROKE_LOCATION) > Float.MIN_VALUE && close) {
+	// 			float d = STROKE_WEIGHT/2*STROKE_LOCATION;
+	// 			if (d > 0) {
+	// 				polys = outsetPolygonsRaster(polys,d);
+	// 			}else {
+	// 				polys = insetPolygonsRaster(polys,PApplet.abs(d));
+	// 			}
+	// 		}
+	// 		if (STROKE_MODE == TANGENT) {
+	// 			int cnt = (int)STROKE_WEIGHT;
+	// 			float spa = STROKE_SPACING;
+	// 			if (STROKE_WEIGHT > 1) {
+	// 				if (STROKE_TANGENT_MODE == WEIGHT) {
+	// 					cnt = (int)PApplet.ceil((float)STROKE_WEIGHT/(float)STROKE_SPACING)+1;
+	// 					spa = (float)STROKE_WEIGHT/(float)cnt;
+	// 				}else if (STROKE_TANGENT_MODE == SPACING) {
+	// 					cnt = (int)PApplet.ceil((float)STROKE_WEIGHT/(float)STROKE_SPACING)+1;
+	// 				}
+	// 			}
+	//
+	// 			ArrayList<ArrayList<PVector>> polys2 = strokePolyTangentRaster(polys,cnt,spa,STROKE_CAP,STROKE_JOIN,close);
+	// 			for (int i = 0; i < polys2.size(); i++) {
+	// 				
+	// 				pushPolyline(polys2.get(i),currentStroke,0f);
+	// 			}
+	// 				
+	// 		}else if (STROKE_MODE == PERPENDICULAR) {
+	// 			
+	// 			for (int i = 0; i < polys.size(); i++) {
+	// 				ArrayList<ArrayList<PVector>> polys2 = strokePolyNormal(polys.get(i),(float)STROKE_WEIGHT/2.0f,STROKE_SPACING,close);
+	// 				for (int j = 0; j < polys2.size(); j++) {
+	// 					pushPolyline(polys2.get(j),currentStroke,0f);
+	// 				}
+	// 			}
+	// 		}else if (STROKE_MODE == ANGLED) {
+	// 			for (int i = 0; i < polys.size(); i++) {
+	// 				ArrayList<ArrayList<PVector>> polys2 = strokePolyNormalAng(polys.get(i),(float)STROKE_WEIGHT/2.0f,STROKE_SPACING,STROKE_ANGLE,close);
+	// 				for (int j = 0; j < polys2.size(); j++) {
+	// 					pushPolyline(polys2.get(j),currentStroke,0f);
+	// 				}
+	// 			}
+	// 		}
+	// 		
+	// 	}
+	// }
 	
 	/** 
 	 *  hatch a polygon with CONCENTRIC (a.k.a inset) mode (using vector math).
@@ -2498,353 +2114,353 @@ public class PEmbroiderGraphics {
 		return spirals;
 	}
 	
-	public ArrayList<ArrayList<PVector>> hatchSpiral_v2(ArrayList<PVector> poly, float d){
-		
-		ArrayList<ArrayList<PVector>> ret = new ArrayList<ArrayList<PVector>>();
-		ArrayList<PVector> spiral = new ArrayList<PVector>();
-		
-		BBox bb = new BBox(poly);
-		bb.x-=2;
-		bb.y-=2;
-		bb.w+=4;
-		bb.h+=4;
-		
-		bb.w += bb.x;
-		bb.h += bb.y;
-		bb.x = 0;
-		bb.y = 0;
-		
-		
-		PVector c = centerpoint(poly);
-		float r = PApplet.max(bb.w,bb.h)*200f;
-		
-		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w), (int)PApplet.ceil(bb.h));
-
-		float dd = d;
-		float a = 0;
-		for (int k = 0; k < 9999; k++) {
-			
-			pg.beginDraw();
-			pg.pushMatrix();
-			pg.background(0);
-			pg.stroke(0);
-			pg.fill(255);
-			pg.strokeWeight(dd);
-
-			pg.beginShape();
-			for (int i = 0; i < poly.size(); i++) {
-				pg.vertex(poly.get(i).x-bb.x,poly.get(i).y-bb.y);
-			}
-			pg.endShape(PConstants.CLOSE);
-			pg.popMatrix();
-			pg.endDraw();
-//			app.image(pg,k*100,0);
-//			pg.save("/Users/studio/Downloads/hsv2-"+k+".png");
-			ArrayList<ArrayList<PVector>> conts = PEmbroiderTrace.findContours(pg);
-			for (int i = 0; i < conts.size(); i++) {
-				conts.set(i, PEmbroiderTrace.approxPolyDP(conts.get(i),2));
-			}
-//			PApplet.println(k,conts.size());
-			if (conts.size() == 0) {
-				break;
-			} else if (conts.size() > 1) {
-				for (int i = 1; i < conts.size(); i++) {
-//					ret.addAll(hatchSpiral_v2(conts.get(i),d));
-				}
-			}
-			
-			ArrayList<PVector> ppp = conts.get(0);
-			
-			ArrayList<PVector> poly2 = new ArrayList<PVector>();
-			for (int i = 0; i < ppp.size(); i++) {
-				poly2.add(new PVector(ppp.get(i).x+bb.x,ppp.get(i).y+bb.y));
-			}
-			
-			
-//			ret.add(poly2);
-			
-			PVector p = new PVector(c.x+r*PApplet.cos(a),c.y+r*PApplet.sin(a));
-			
-			ArrayList<PVector> qs = segmentIntersectPolygon(c,p,ppp);
-			if (qs.size()>0) {
-				PVector q = qs.get(0);
-				
-//				PApplet.println(q);
-//				app.rect(qs.get(0).x,qs.get(0).y,20,20);
-				spiral.add(new PVector(q.x+bb.x,q.y+bb.y));
-			}else {
-//				PApplet.println("???",c,p);
-			}
-			c = centerpoint(ppp);
-			a += 0.1;
-			dd += d;
-		}
-		ret.add(spiral);
-		return ret;
-	}
-	public ArrayList<ArrayList<PVector>> hatchSpiral_v3(ArrayList<PVector> poly, float d, int maxIter, boolean checkOrientation, boolean reverse){
-		ArrayList<ArrayList<PVector>> spirals = new ArrayList<ArrayList<PVector>>();
-		
-		if (!polygonOrientation(poly) && checkOrientation) {
-			poly = new ArrayList<PVector>(poly);
-			Collections.reverse(poly);
-		}
-
-		
-		BBox bb = new BBox(poly);
-		bb.x-=2;
-		bb.y-=2;
-		bb.w+=4;
-		bb.h+=4;
-		
-		bb.w += bb.x;
-		bb.h += bb.y;
-		bb.x = 0;
-		bb.y = 0;
-		
-		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w), (int)PApplet.ceil(bb.h));
-
-		float dd = 0;
-
-		
-		ArrayList<ArrayList<PVector>> polys2 = new ArrayList<ArrayList<PVector>>();
-//		polys2.add(poly);
-		
-		ArrayList<ArrayList<PVector>> gone = new ArrayList<ArrayList<PVector>>();
-		
-		for (int k = 0; k < 9999; k++) {
-			
-			pg.beginDraw();
-			pg.pushMatrix();
-			pg.background(0);
-			pg.stroke(0);
-			pg.fill(255);
-			pg.strokeWeight(dd);
-			pg.strokeJoin(PConstants.ROUND);
-
-			pg.beginShape();
-			for (int i = 0; i < poly.size(); i++) {
-				pg.vertex(poly.get(i).x-bb.x,poly.get(i).y-bb.y);
-			}
-			pg.endShape(PConstants.CLOSE);
-			
-			for (int i = 0; i < gone.size(); i++) {
-				pg.noStroke();
-				pg.fill(0);
-				pg.strokeJoin(PConstants.ROUND);
-				pg.beginShape();
-				for (int j = 0; j < gone.get(i).size();j ++) {
-					pg.vertex(gone.get(i).get(j).x,gone.get(i).get(j).y);
-				}
-				
-				pg.endShape(PConstants.CLOSE);
-			}
-			
-			pg.popMatrix();
-			pg.endDraw();
-			ArrayList<ArrayList<PVector>> conts = PEmbroiderTrace.findContours(pg);
-			for (int i = 0; i < conts.size(); i++) {
-				conts.set(i, PEmbroiderTrace.approxPolyDP(conts.get(i),2f));
-			}
-			if (conts.size() == 0) {
-				break;
-			}
-			
-			if (conts.size() > 1) {
-				for (int i = 0; i < conts.size(); i++) {
-					spirals.addAll(hatchSpiral_v3(conts.get(i),d,maxIter,checkOrientation,reverse));
-					gone.add(conts.get(i));
-				}
-				break;
-			}
-			polys2.add(conts.get(0));
-			if (k == 0) {
-				dd += d;
-			}else {
-				dd += d*2;
-			}
-		}
-		
-		float l = 0;
-		for (int i = 0; i < poly.size()-1; i++) {
-			l += poly.get(i).dist(poly.get(i+1));
-		}
-
-		int n = 20*((int)Math.ceil((float)l / (float)STITCH_LENGTH));
-
-
-		for (int i = polys2.size()-1; i >= 0; i--) {
-			if (polys2.get(i).size() <= 2) {
-				polys2.remove(i);
-				continue;
-			}
-//			polys2.get(i).add(polys2.get(i).get(0));
-			polys2.set(i,resampleN(polys2.get(i),n));
-			if (reverse) {
-				Collections.reverse(polys2.get(i));
-			}
-		}
-		
-//		spirals.addAll(polys2);
-		ArrayList<PVector> spiral = new ArrayList<PVector>();
-		for (int i = 1; i < polys2.size(); i++) {
-			int jo = 0;
-			if (i > 0) {
-				jo = rotatePolygonToMatch(polys2.get(i-1),polys2.get(i));
-			}
-			
-			for (int j = 0; j < n; j++) {
-				PVector p0 = polys2.get(i).get((j+jo)%polys2.get(i).size());
-				PVector p1;
-
-				if (i == polys2.size()-1) {
-					if (polys2.size() >= 1 && i > 0) {
-
-						p1 = polys2.get(i-1).get(j);
-					}else {
-						p1 = p0.copy();
-					}
-				}else {
-					p1 = polys2.get(i+1).get(j);
-				}
-				float t = (float)j/(float)n;
-				spiral.add(p0.copy().mult(1-t).add(p1.copy().mult(t)));
-			}
-//			spirals.add(polys2.get(i));
-		}
-
-		
-		if (spiral.size() >= 2) {
-			spirals.add(spiral);
-		}
-
-		return spirals;
-	}
-	
-	public ArrayList<ArrayList<PVector>> hatchSpiral_v4(ArrayList<PVector> poly, float d, int maxIter, boolean checkOrientation, boolean reverse){
-		ArrayList<ArrayList<PVector>> spirals = new ArrayList<ArrayList<PVector>>();
-		
-		if (!polygonOrientation(poly) && checkOrientation) {
-			poly = new ArrayList<PVector>(poly);
-			Collections.reverse(poly);
-		}
-
-		
-		BBox bb = new BBox(poly);
-		bb.x-=2;
-		bb.y-=2;
-		bb.w+=4;
-		bb.h+=4;
-		
-		bb.w += bb.x;
-		bb.h += bb.y;
-		bb.x = 0;
-		bb.y = 0;
-		
-		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w), (int)PApplet.ceil(bb.h));
-
-		float dd = 0;
-
-		
-		ArrayList<ArrayList<PVector>> polys2 = new ArrayList<ArrayList<PVector>>();
-//		polys2.add(poly);
-		
-		ArrayList<ArrayList<PVector>> gone = new ArrayList<ArrayList<PVector>>();
-		
-		for (int k = 0; k < 9999; k++) {
-			
-			pg.beginDraw();
-			pg.pushMatrix();
-			pg.background(0);
-			pg.stroke(0);
-			pg.fill(255);
-			pg.strokeWeight(dd);
-			pg.strokeJoin(PConstants.ROUND);
-
-			pg.beginShape();
-			for (int i = 0; i < poly.size(); i++) {
-				pg.vertex(poly.get(i).x-bb.x,poly.get(i).y-bb.y);
-			}
-			pg.endShape(PConstants.CLOSE);
-			
-			for (int i = 0; i < gone.size(); i++) {
-				pg.noStroke();
-				pg.fill(0);
-				pg.strokeJoin(PConstants.ROUND);
-				pg.beginShape();
-				for (int j = 0; j < gone.get(i).size();j ++) {
-					pg.vertex(gone.get(i).get(j).x,gone.get(i).get(j).y);
-				}
-				
-				pg.endShape(PConstants.CLOSE);
-			}
-			
-			pg.popMatrix();
-			pg.endDraw();
-			ArrayList<ArrayList<PVector>> conts = PEmbroiderTrace.findContours(pg);
-			for (int i = 0; i < conts.size(); i++) {
-				conts.set(i, PEmbroiderTrace.approxPolyDP(conts.get(i),2f));
-			}
-			if (conts.size() == 0) {
-				break;
-			}
-			
-			if (conts.size() > 1) {
-				for (int i = 0; i < conts.size(); i++) {
-					spirals.addAll(hatchSpiral_v4(conts.get(i),d,maxIter,checkOrientation,reverse));
-					gone.add(conts.get(i));
-				}
-				break;
-			}
-			polys2.add(conts.get(0));
-			if (k == 0) {
-				dd += d;
-			}else {
-				dd += d*2;
-			}
-		}
-		
-		float l = 0;
-		for (int i = 0; i < poly.size()-1; i++) {
-			l += poly.get(i).dist(poly.get(i+1));
-		}
-
-		int n = 100*((int)Math.ceil((float)l / (float)STITCH_LENGTH));
-
-
-		for (int i = polys2.size()-1; i >= 0; i--) {
-			if (polys2.get(i).size() <= 2) {
-				polys2.remove(i);
-				continue;
-			}
-//			polys2.get(i).add(polys2.get(i).get(0));
-			polys2.set(i,resampleN(polys2.get(i),n));
-			if (reverse) {
-				Collections.reverse(polys2.get(i));
-			}
-		}
-		
-//		spirals.addAll(polys2);
-		ArrayList<PVector> spiral = new ArrayList<PVector>();
-		int jo = 0;
-		for (int i = 0; i < polys2.size(); i++) {
-
-			if (i > 0) {
-				jo += rotatePolygonToMatch(polys2.get(i-1),polys2.get(i));
-			}
-			
-			spiral.add(polys2.get(i).get((i+jo)%polys2.get(i).size()));
-			
-//			spirals.add(polys2.get(i));
-		}
-
-		
-		if (spiral.size() >= 2) {
-			spirals.add(spiral);
-		}
-
-		return spirals;
-	}
+// 	public ArrayList<ArrayList<PVector>> hatchSpiral_v2(ArrayList<PVector> poly, float d){
+// 		
+// 		ArrayList<ArrayList<PVector>> ret = new ArrayList<ArrayList<PVector>>();
+// 		ArrayList<PVector> spiral = new ArrayList<PVector>();
+// 		
+// 		BBox bb = new BBox(poly);
+// 		bb.x-=2;
+// 		bb.y-=2;
+// 		bb.w+=4;
+// 		bb.h+=4;
+// 		
+// 		bb.w += bb.x;
+// 		bb.h += bb.y;
+// 		bb.x = 0;
+// 		bb.y = 0;
+// 		
+// 		
+// 		PVector c = centerpoint(poly);
+// 		float r = PApplet.max(bb.w,bb.h)*200f;
+// 		
+// 		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w), (int)PApplet.ceil(bb.h));
+//
+// 		float dd = d;
+// 		float a = 0;
+// 		for (int k = 0; k < 9999; k++) {
+// 			
+// 			pg.beginDraw();
+// 			pg.pushMatrix();
+// 			pg.background(0);
+// 			pg.stroke(0);
+// 			pg.fill(255);
+// 			pg.strokeWeight(dd);
+//
+// 			pg.beginShape();
+// 			for (int i = 0; i < poly.size(); i++) {
+// 				pg.vertex(poly.get(i).x-bb.x,poly.get(i).y-bb.y);
+// 			}
+// 			pg.endShape(PConstants.CLOSE);
+// 			pg.popMatrix();
+// 			pg.endDraw();
+// //			app.image(pg,k*100,0);
+// //			pg.save("/Users/studio/Downloads/hsv2-"+k+".png");
+// 			ArrayList<ArrayList<PVector>> conts = PEmbroiderTrace.findContours(pg);
+// 			for (int i = 0; i < conts.size(); i++) {
+// 				conts.set(i, PEmbroiderTrace.approxPolyDP(conts.get(i),2));
+// 			}
+// //			PApplet.println(k,conts.size());
+// 			if (conts.size() == 0) {
+// 				break;
+// 			} else if (conts.size() > 1) {
+// 				for (int i = 1; i < conts.size(); i++) {
+// //					ret.addAll(hatchSpiral_v2(conts.get(i),d));
+// 				}
+// 			}
+// 			
+// 			ArrayList<PVector> ppp = conts.get(0);
+// 			
+// 			ArrayList<PVector> poly2 = new ArrayList<PVector>();
+// 			for (int i = 0; i < ppp.size(); i++) {
+// 				poly2.add(new PVector(ppp.get(i).x+bb.x,ppp.get(i).y+bb.y));
+// 			}
+// 			
+// 			
+// //			ret.add(poly2);
+// 			
+// 			PVector p = new PVector(c.x+r*PApplet.cos(a),c.y+r*PApplet.sin(a));
+// 			
+// 			ArrayList<PVector> qs = segmentIntersectPolygon(c,p,ppp);
+// 			if (qs.size()>0) {
+// 				PVector q = qs.get(0);
+// 				
+// //				PApplet.println(q);
+// //				app.rect(qs.get(0).x,qs.get(0).y,20,20);
+// 				spiral.add(new PVector(q.x+bb.x,q.y+bb.y));
+// 			}else {
+// //				PApplet.println("???",c,p);
+// 			}
+// 			c = centerpoint(ppp);
+// 			a += 0.1;
+// 			dd += d;
+// 		}
+// 		ret.add(spiral);
+// 		return ret;
+// 	}
+// 	public ArrayList<ArrayList<PVector>> hatchSpiral_v3(ArrayList<PVector> poly, float d, int maxIter, boolean checkOrientation, boolean reverse){
+// 		ArrayList<ArrayList<PVector>> spirals = new ArrayList<ArrayList<PVector>>();
+// 		
+// 		if (!polygonOrientation(poly) && checkOrientation) {
+// 			poly = new ArrayList<PVector>(poly);
+// 			Collections.reverse(poly);
+// 		}
+//
+// 		
+// 		BBox bb = new BBox(poly);
+// 		bb.x-=2;
+// 		bb.y-=2;
+// 		bb.w+=4;
+// 		bb.h+=4;
+// 		
+// 		bb.w += bb.x;
+// 		bb.h += bb.y;
+// 		bb.x = 0;
+// 		bb.y = 0;
+// 		
+// 		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w), (int)PApplet.ceil(bb.h));
+//
+// 		float dd = 0;
+//
+// 		
+// 		ArrayList<ArrayList<PVector>> polys2 = new ArrayList<ArrayList<PVector>>();
+// //		polys2.add(poly);
+// 		
+// 		ArrayList<ArrayList<PVector>> gone = new ArrayList<ArrayList<PVector>>();
+// 		
+// 		for (int k = 0; k < 9999; k++) {
+// 			
+// 			pg.beginDraw();
+// 			pg.pushMatrix();
+// 			pg.background(0);
+// 			pg.stroke(0);
+// 			pg.fill(255);
+// 			pg.strokeWeight(dd);
+// 			pg.strokeJoin(PConstants.ROUND);
+//
+// 			pg.beginShape();
+// 			for (int i = 0; i < poly.size(); i++) {
+// 				pg.vertex(poly.get(i).x-bb.x,poly.get(i).y-bb.y);
+// 			}
+// 			pg.endShape(PConstants.CLOSE);
+// 			
+// 			for (int i = 0; i < gone.size(); i++) {
+// 				pg.noStroke();
+// 				pg.fill(0);
+// 				pg.strokeJoin(PConstants.ROUND);
+// 				pg.beginShape();
+// 				for (int j = 0; j < gone.get(i).size();j ++) {
+// 					pg.vertex(gone.get(i).get(j).x,gone.get(i).get(j).y);
+// 				}
+// 				
+// 				pg.endShape(PConstants.CLOSE);
+// 			}
+// 			
+// 			pg.popMatrix();
+// 			pg.endDraw();
+// 			ArrayList<ArrayList<PVector>> conts = PEmbroiderTrace.findContours(pg);
+// 			for (int i = 0; i < conts.size(); i++) {
+// 				conts.set(i, PEmbroiderTrace.approxPolyDP(conts.get(i),2f));
+// 			}
+// 			if (conts.size() == 0) {
+// 				break;
+// 			}
+// 			
+// 			if (conts.size() > 1) {
+// 				for (int i = 0; i < conts.size(); i++) {
+// 					spirals.addAll(hatchSpiral_v3(conts.get(i),d,maxIter,checkOrientation,reverse));
+// 					gone.add(conts.get(i));
+// 				}
+// 				break;
+// 			}
+// 			polys2.add(conts.get(0));
+// 			if (k == 0) {
+// 				dd += d;
+// 			}else {
+// 				dd += d*2;
+// 			}
+// 		}
+// 		
+// 		float l = 0;
+// 		for (int i = 0; i < poly.size()-1; i++) {
+// 			l += poly.get(i).dist(poly.get(i+1));
+// 		}
+//
+// 		int n = 20*((int)Math.ceil((float)l / (float)STITCH_LENGTH));
+//
+//
+// 		for (int i = polys2.size()-1; i >= 0; i--) {
+// 			if (polys2.get(i).size() <= 2) {
+// 				polys2.remove(i);
+// 				continue;
+// 			}
+// //			polys2.get(i).add(polys2.get(i).get(0));
+// 			polys2.set(i,resampleN(polys2.get(i),n));
+// 			if (reverse) {
+// 				Collections.reverse(polys2.get(i));
+// 			}
+// 		}
+// 		
+// //		spirals.addAll(polys2);
+// 		ArrayList<PVector> spiral = new ArrayList<PVector>();
+// 		for (int i = 1; i < polys2.size(); i++) {
+// 			int jo = 0;
+// 			if (i > 0) {
+// 				jo = rotatePolygonToMatch(polys2.get(i-1),polys2.get(i));
+// 			}
+// 			
+// 			for (int j = 0; j < n; j++) {
+// 				PVector p0 = polys2.get(i).get((j+jo)%polys2.get(i).size());
+// 				PVector p1;
+//
+// 				if (i == polys2.size()-1) {
+// 					if (polys2.size() >= 1 && i > 0) {
+//
+// 						p1 = polys2.get(i-1).get(j);
+// 					}else {
+// 						p1 = p0.copy();
+// 					}
+// 				}else {
+// 					p1 = polys2.get(i+1).get(j);
+// 				}
+// 				float t = (float)j/(float)n;
+// 				spiral.add(p0.copy().mult(1-t).add(p1.copy().mult(t)));
+// 			}
+// //			spirals.add(polys2.get(i));
+// 		}
+//
+// 		
+// 		if (spiral.size() >= 2) {
+// 			spirals.add(spiral);
+// 		}
+//
+// 		return spirals;
+// 	}
+// 	
+// 	public ArrayList<ArrayList<PVector>> hatchSpiral_v4(ArrayList<PVector> poly, float d, int maxIter, boolean checkOrientation, boolean reverse){
+// 		ArrayList<ArrayList<PVector>> spirals = new ArrayList<ArrayList<PVector>>();
+// 		
+// 		if (!polygonOrientation(poly) && checkOrientation) {
+// 			poly = new ArrayList<PVector>(poly);
+// 			Collections.reverse(poly);
+// 		}
+//
+// 		
+// 		BBox bb = new BBox(poly);
+// 		bb.x-=2;
+// 		bb.y-=2;
+// 		bb.w+=4;
+// 		bb.h+=4;
+// 		
+// 		bb.w += bb.x;
+// 		bb.h += bb.y;
+// 		bb.x = 0;
+// 		bb.y = 0;
+// 		
+// 		PGraphics pg = app.createGraphics((int)PApplet.ceil(bb.w), (int)PApplet.ceil(bb.h));
+//
+// 		float dd = 0;
+//
+// 		
+// 		ArrayList<ArrayList<PVector>> polys2 = new ArrayList<ArrayList<PVector>>();
+// //		polys2.add(poly);
+// 		
+// 		ArrayList<ArrayList<PVector>> gone = new ArrayList<ArrayList<PVector>>();
+// 		
+// 		for (int k = 0; k < 9999; k++) {
+// 			
+// 			pg.beginDraw();
+// 			pg.pushMatrix();
+// 			pg.background(0);
+// 			pg.stroke(0);
+// 			pg.fill(255);
+// 			pg.strokeWeight(dd);
+// 			pg.strokeJoin(PConstants.ROUND);
+//
+// 			pg.beginShape();
+// 			for (int i = 0; i < poly.size(); i++) {
+// 				pg.vertex(poly.get(i).x-bb.x,poly.get(i).y-bb.y);
+// 			}
+// 			pg.endShape(PConstants.CLOSE);
+// 			
+// 			for (int i = 0; i < gone.size(); i++) {
+// 				pg.noStroke();
+// 				pg.fill(0);
+// 				pg.strokeJoin(PConstants.ROUND);
+// 				pg.beginShape();
+// 				for (int j = 0; j < gone.get(i).size();j ++) {
+// 					pg.vertex(gone.get(i).get(j).x,gone.get(i).get(j).y);
+// 				}
+// 				
+// 				pg.endShape(PConstants.CLOSE);
+// 			}
+// 			
+// 			pg.popMatrix();
+// 			pg.endDraw();
+// 			ArrayList<ArrayList<PVector>> conts = PEmbroiderTrace.findContours(pg);
+// 			for (int i = 0; i < conts.size(); i++) {
+// 				conts.set(i, PEmbroiderTrace.approxPolyDP(conts.get(i),2f));
+// 			}
+// 			if (conts.size() == 0) {
+// 				break;
+// 			}
+// 			
+// 			if (conts.size() > 1) {
+// 				for (int i = 0; i < conts.size(); i++) {
+// 					spirals.addAll(hatchSpiral_v4(conts.get(i),d,maxIter,checkOrientation,reverse));
+// 					gone.add(conts.get(i));
+// 				}
+// 				break;
+// 			}
+// 			polys2.add(conts.get(0));
+// 			if (k == 0) {
+// 				dd += d;
+// 			}else {
+// 				dd += d*2;
+// 			}
+// 		}
+// 		
+// 		float l = 0;
+// 		for (int i = 0; i < poly.size()-1; i++) {
+// 			l += poly.get(i).dist(poly.get(i+1));
+// 		}
+//
+// 		int n = 100*((int)Math.ceil((float)l / (float)STITCH_LENGTH));
+//
+//
+// 		for (int i = polys2.size()-1; i >= 0; i--) {
+// 			if (polys2.get(i).size() <= 2) {
+// 				polys2.remove(i);
+// 				continue;
+// 			}
+// //			polys2.get(i).add(polys2.get(i).get(0));
+// 			polys2.set(i,resampleN(polys2.get(i),n));
+// 			if (reverse) {
+// 				Collections.reverse(polys2.get(i));
+// 			}
+// 		}
+// 		
+// //		spirals.addAll(polys2);
+// 		ArrayList<PVector> spiral = new ArrayList<PVector>();
+// 		int jo = 0;
+// 		for (int i = 0; i < polys2.size(); i++) {
+//
+// 			if (i > 0) {
+// 				jo += rotatePolygonToMatch(polys2.get(i-1),polys2.get(i));
+// 			}
+// 			
+// 			spiral.add(polys2.get(i).get((i+jo)%polys2.get(i).size()));
+// 			
+// //			spirals.add(polys2.get(i));
+// 		}
+//
+// 		
+// 		if (spiral.size() >= 2) {
+// 			spirals.add(spiral);
+// 		}
+//
+// 		return spirals;
+// 	}
 	
 	/** 
 	 *  Hatch a polygon with PERLIN mode.
