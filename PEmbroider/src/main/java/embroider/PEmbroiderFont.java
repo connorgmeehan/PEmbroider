@@ -1,8 +1,8 @@
-package processing.embroider;
+package embroider;
 
 import java.util.*;
 
-import processing.core.*;
+import embroider.shims.PVector;
 
 public class PEmbroiderFont {
 	// ported from https://github.com/LingDong-/p5-hershey-js

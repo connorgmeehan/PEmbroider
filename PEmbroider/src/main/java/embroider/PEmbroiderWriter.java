@@ -2,7 +2,7 @@
 // https://github.com/EmbroidePy/EmbroideryIO/blob/master/core/src/main/java/org/embroideryio/embroideryio/
 // non-embroidery formats by Lingdong
 
-package processing.embroider;
+package embroider;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -14,7 +14,7 @@ import java.util.Stack;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import processing.core.PVector;
+import embroider.shims.PVector;
 
 public class PEmbroiderWriter {
 

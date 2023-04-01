@@ -1,4 +1,4 @@
-package processing.embroider;
+package embroider;
 
 public class PEmbroiderBooleanShapeGraphics extends processing.awt.PGraphicsJava2D {
 	public static final int UNION        = 1;

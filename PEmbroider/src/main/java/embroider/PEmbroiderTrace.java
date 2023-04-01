@@ -1,8 +1,8 @@
-package processing.embroider;
+package embroider;
 
 import java.util.ArrayList;
 
-import processing.core.*;
+import embroider.shims.PVector;
 
 
 public class PEmbroiderTrace {

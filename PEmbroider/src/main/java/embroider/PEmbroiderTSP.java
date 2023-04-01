@@ -2,9 +2,9 @@
 // https://en.wikipedia.org/wiki/Travelling_salesman_problem
 // https://en.wikipedia.org/wiki/2-opt
 
-package processing.embroider;
-import processing.core.*;
+package embroider;
 import java.util.*; 
+import embroider.shims.PVector;
 
 
 public class PEmbroiderTSP {

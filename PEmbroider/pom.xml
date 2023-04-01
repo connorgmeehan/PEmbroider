@@ -79,6 +79,7 @@
 				<configuration>
 					<verbose>true</verbose>
 					<tsOut>target/ts</tsOut>
+					<tsOnly>true</tsOnly>
 					<outDir>target/js</outDir>
 					<candiesJsOut>webapp/candies</candiesJsOut>
 					<targetVersion>ES6</targetVersion>

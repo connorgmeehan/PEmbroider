@@ -1,4 +1,4 @@
-package processing.embroider;
+package embroider;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,8 +7,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 
-//import processing.awt.PGraphicsJava2D;
-import processing.core.*;
+import embroider.shims.PVector;
 
 /**
  * This is a template class and can be used to start a new processing Library.

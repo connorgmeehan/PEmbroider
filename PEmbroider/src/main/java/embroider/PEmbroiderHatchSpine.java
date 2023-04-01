@@ -1,4 +1,4 @@
-package processing.embroider;
+package embroider;
 
 import java.util.ArrayList;
 
@@ -6,7 +6,8 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
-import processing.core.PVector;
+
+import embroider.shims.PVector;
 
 public class PEmbroiderHatchSpine{
 	public static PEmbroiderGraphics G;
