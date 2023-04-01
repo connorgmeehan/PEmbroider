@@ -1,0 +1,11 @@
+/bin/
+tmp
+.mvn/
+/target/
+.generated
+.ts
+.jsweet
+.project
+.settings
+.classpath
+.vscode/
