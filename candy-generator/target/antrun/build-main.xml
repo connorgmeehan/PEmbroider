@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <property name="compile_classpath" refid="maven.compile.classpath"/>
+  <property name="outputDir" value="/home/connormeehan/workspace/JEmbroiderLib/candy-generator/target/classes"/>
+  <property name="sourceDir" value="/home/connormeehan/workspace/JEmbroiderLib/candy-generator/src/main/java"/>
+  <ant antfile="/home/connormeehan/workspace/JEmbroiderLib/candy-generator/build.xml" target="gen-parser"/>
+</target>
+</project>
